@@ -1,0 +1,23 @@
+---
+title: "Linear models 2: Linear Regression"
+output: 
+  learnr::tutorial:
+    progressive: false
+    theme: cerulean
+    highlight: pygments
+    css: css/test.css
+    code_folding: hide
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+  Linear models with a single, continuous explanatory variable. How to fit a straight line through a cloud of data, partitioning the variance for a significance test and how to interpret the output.
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = TRUE, comment = NA)
+```
+
+
+## Fitting lines to bivariate data
+
