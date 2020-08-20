@@ -117,11 +117,11 @@ quiz(
     "Is there an overall pattern in these data?",
     answer("No"),
     answer(
-      "As the filter size increases the leaf mass tends to increase",
+      "As the filter size increases the leaf mass tends to decrease",
       correct = TRUE
     ),
     answer(
-      "There is a suggestion of a negative correlation between filter size and leaf mass"
+      "There is a suggestion of a positive correlation between filter size and leaf mass"
     ),
     answer(
       "Because the inter-quartile ranges are so large it is difficult to say"
@@ -337,6 +337,11 @@ R2 <- lm(root_mass ~ inoculum, data = ragwort)
 summary(R2)
 ```
 
+```{r echo = FALSE}
+ragwort$inoculum <- relevel(ragwort$inoculum, ref = "0.2µm")
+```
+
+
 All of the details of this ANOVA are the same for both R1 and R2, the only difference is that the coefficients table is calculated with the 1000µm treatment as the intercept. All of the other filtered treatments have means which are higher than the 1000µm treatment, so the estimated coefficients are all positive numbers. Two of these (5µm and 0.2µm) are sufficiently different from the 1000µm treatment and have small enough standard errors that these differences are significantly different from zero on the marginal t-test provided. The p-value for the 0.2µm treatment is the same as we saw earlier with the default option for the intercept and is rather closer to 0.05 than that for the 5µm treatment, meaning that we have rather less confidence in this particular effect. Consistent with the Tukey test, the 20µm treatment does not appear to be significantly different from the 1000µm treatment.
 
 On the basis of this approach to understanding the differences between oour means, and focusing on the results when we have the 1000µm treatment specified for our intercept, we would conclude that the mean root mass for both the 0.2 and the 5 µm treatment is significantly higher than that for the 1000µm treatments, whereas that for the 20µm treatment is not. This approach doesn't give us explicit tests for the other differences, such as those between the 0.2 and the 5µm means, but we can look at our graph of means and confidence intervals (figure 2) and conclude that given the similarity of the means and the strong overlap of the 95% confidence intervals we can have little confidence that there is a significant difference between the 0.2 and 5µm treatment means, or those for the the 0.2 and 20µm treatments.
@@ -444,7 +449,7 @@ plotmeans(ragwort$root_mass ~ ragwort$inoculum,
 # in the plot formula with the one for leaf mass
 # and change the y-axis label
 
-# You don't need to refer to them ANOVA
+# You don't need to refer to the ANOVA
 # at all
 ```
 
@@ -488,7 +493,7 @@ quiz(
     answer("We have the most confidence in the location of the 20µm mean", correct = TRUE),
         answer("The differences between means and the patterns of overlap between the confidence intervals we see in this plot is what we would expect given the results of the Tukey test", correct = TRUE),
     answer("The amount of overlap between the 0.2µm mean and the 0.5µm mean is a consequence of the small sample size for the 0.2µm treatment"),
-    answer("Because the 95% CIs for 1000µm do not overlap zero we concluse that this mean is not signficant")
+    answer("Because the 95% CIs for 1000µm do not overlap zero we conclude that this mean is not signficant")
   )
 )
 ```
@@ -575,6 +580,76 @@ The left hand plot shows us the residuals versus the fitted values. This gives u
 
 The right hand plot gives us information about how closely the residuals conform to a normal distribution. If they were perfectly normal they would all lie on the dotted line, but in practice this never happens. Here most of our data points are on or very close to the line but the ones with the most negative residuals are somewhat above the line and the ones with the most positive residuals are somewhat below the line. This tells us that the distribution of residuals has "thin tails" (or to use the statistical jargon it is somewhat "leptokurtotic"). This means that the most negative values are not as negative as we would expect were they following a normal distribution, and that if the distribution were truly following a normal distribution the highest values would be a bit higher than they are. 
 
-Is this a problem for our analysis? Not really. As we've discussed, linear models are robust to small violations of these assumptions, and this is only a small violation. The residuals are symmetrically distributed, with no skew, and they do at least roughly conform to a normal distribution, albeit one with somewhat skinny tails. 
+Is this a problem for our analysis? Not really. As we've discussed, linear models are robust to small violations of these assumptions, and this is only a small violation. The residuals are symmetrically distributed, with no skew, and they do at least roughly conform to a normal distribution, albeit one with somewhat skinny tails.
+
+Finally, if you're wondering what the numbers on the plots are, R labels the three most extreme residuals on each plot with their index number. This is helpful and makes it easy to identify them if you need to do anything further.
+
+## Exercise: diagnostics for the leaf mass ANOVA
+
+The first thing to do is to plot our two diagnostic plots for your fitted ANOVA on leaf mass.
+
+```{r diagnostics, exercise = TRUE, exercise.cap = "Diagnostics", exercise.lines = 5, exercise.setup = "prepare-anova" }
 
 
+```
+
+```{r diagnostics-hint-1}
+# You can use the code as before but substitute 
+# the name of your ANOVA object
+```
+
+```{r diagnostics-hint-2}
+# Don't forget to set par(mfrow = c(1,2))
+# to get the two plots next to each other
+```
+
+```{r diagnostics-hint-3}
+# This is the solution
+par(mfrow = c(1,2))
+
+plot(L1, which = 1:2)
+```
+
+Have a look at these plots. What do you see?
+
+```{r diagnostics-quiz, echo=FALSE}
+quiz(
+  caption = "Diagnostic plots questions",
+  question(
+    "Are the errors roughly normally distributed?",
+    answer("Yes: the points on the qq-plot are mostly on or close to the line, but there is one residual with an anomalously positive value", correct = TRUE),
+    answer("No: several of the points in the qq-plot are a long way from the line "),
+    answer("No, there is evidence that the residuals follow a skewed distribution"),
+    answer("Yes: the similar amounts of dispersion in the residuals versus fitted values plot indicates normal errors")
+    ),
+  question("Are the variances of the groups different enough to cause concern?",
+    answer("Yes: the variance is clearly increasing with increasing fitted values"),
+    answer("No: the points on the qq-plot are mostly on or close to the line, but there is one residual with an anomalously positive value"),
+    answer("Yes: smaller fitted values are clearly associated with more dispersion in the residuals"),
+    answer("No: the amount of dispersion in the residuals is roughly equal between groups, but there is one residual with an anomalously high value", correct = TRUE)
+  )
+)
+```
+
+<details><summary>**Click here for more on the diagnostics**</summary>
+
+As you've probably seen the diagnostics for the leaf mass model are mostly well behaved, but there is one data point (30) which has an anomalously high positive residual - it seems to be sufficiently different from the others that we should maybe take a closer look. This point is in fact one of the "outliers" that showed up in the boxplot of these data that we looked at before and it was suggested that it wasn't sufficiently different from the rest of the data to justify exclusion. Now that we have this further evidence from the diagnostic plots, however, we might want to look rather more closely at whether this particular point is having any substantial effect on the conclusions from the ANOVA. We can refit our ANOVA with the data point removed by using the subset argument.
+
+```{r}
+L2 <- lm(leaf_mass ~ inoculum, data = ragwort, subset = -30)
+
+summary(L2)
+```
+The ANOVA is still highly significant (the last row of the summary gives the F-statistic from the ANOVA table) but have the other details changed? Let's compare it with the coefficients table for previous model.
+
+```{r echo = FALSE}
+L1 <- lm(leaf_mass ~ inoculum, data = ragwort)
+```
+
+
+```{r}
+summary(L1)
+```
+In general the new model is a somewhat better fit all round: the R-squared values are higher, the F-statistic is larger and the marginal p-values in the coefficients table are smaller. The marginal p-value for the contrast between the 5µm and the 0.2µm treatment has also changed from 0.323, nowhere near statistical significance, to 0.0731, making this contrast now close to significance. What to do? This single data point is having some effect on our conclusions and our confidence in the patterns in these data so should we just remove it and present the analysis without it? Different people might give you different answers here but your author's opinion is no:  unless there is further, independent evidence that indicates a potential problem with this data point (e.g. was it noted during the experiment as being different from the rest? Was it accidentally given extra water? Was it left in a better lit position than the others for some reason) there is still no good reason to exclude it. The best thing to do is just to note in our report that there is one data point which is rather influential and that exclusion of it leads to a somewhat different result, giving us less confidence in whether there is a difference between two of the treatments or not. This way we present the reader with as much information about how certain or uncertain we are about the patterns in our data as we can and let them make up their own mind.
+
+</details>
