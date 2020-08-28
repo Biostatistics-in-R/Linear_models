@@ -1,75 +1,96 @@
 ---
-title: "Tutorial"
-output: learnr::tutorial
+title: "Linear models 3: Multi-factor ANOVA"
+output: 
+  learnr::tutorial:
+    progressive: false
+    theme: cerulean
+    highlight: pygments
+    css: css/test.css
+    code_folding: hide
 runtime: shiny_prerendered
+author: Rob Knell
+description: >
+  Analysis of variance with multiple explanatory factors: how to fit models, check diagnostics and interpret the output..
 ---
 
 ```{r setup, include=FALSE}
 library(learnr)
-knitr::opts_chunk$set(echo = FALSE)
-```
-
-
-## Topic 1
-
-### Exercise 
-
-*Here's a simple exercise with an empty code chunk provided for entering the answer.*
-
-Write the R code required to add two plus two:
-
-```{r two-plus-two, exercise=TRUE}
-
-```
-
-### Exercise with Code
-
-*Here's an exercise with some prepopulated code as well as `exercise.lines = 5` to provide a bit more initial room to work.*
-
-Now write a function that adds any two numbers and then call it:
-
-```{r add-function, exercise=TRUE, exercise.lines = 5}
-add <- function() {
-  
-}
-```
-
-## Topic 2
-
-### Exercise with Hint
-
-*Here's an exercise where the chunk is pre-evaulated via the `exercise.eval` option (so the user can see the default output we'd like them to customize). We also add a "hint" to the correct solution via the chunk immediate below labeled `print-limit-hint`.*
-
-Modify the following code to limit the number of rows printed to 5:
-
-```{r print-limit, exercise=TRUE, exercise.eval=TRUE}
-mtcars
-```
-
-```{r print-limit-hint}
-head(mtcars)
-```
-
-### Quiz
-
-*You can include any number of single or multiple choice questions as a quiz. Use the `question` function to define a question and the `quiz` function for grouping multiple questions together.*
-
-Some questions to verify that you understand the purposes of various base and recommended R packages:
-
-```{r quiz}
-quiz(
-  question("Which package contains functions for installing other R packages?",
-    answer("base"),
-    answer("tools"),
-    answer("utils", correct = TRUE),
-    answer("codetools")
-  ),
-  question("Which of the R packages listed below are used to create plots?",
-    answer("lattice", correct = TRUE),
-    answer("tools"),
-    answer("stats"),
-    answer("grid", correct = TRUE)
+library(gplots)
+knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.width = 5, fig.height = 5)
+mouse_movement <-
+  read.csv(
+    "https://github.com/rjknell/Linear_models/raw/master/data/McCarthy_mice_activity.csv",
+    stringsAsFactors = TRUE
   )
-)
 ```
+
+## Adding extra variables to a linear model
+
+So far we've seen how the linear model can cope with both factors and continuous variables as explanatory variables, and that the way that variance is partitioned for both types of epxlanatory variable is fundamentally the same. Linear models can also cope with more than one explanatory variable, so you can analyse the effect of several different things that might influence your variable of interest at the same time. This has some important benefits over analysing each explanatory variable's effect separately:
+
+* Fitting a single model reduces the number of statistical tests which we need to do, reducing the probability of type 1 errors.
+
+* We can sometimes detect effects which we would not see in single variable analyses, because the linear model allows us to ask the question "what is the effect of variable Y when we have already taken the effect of variable X into account?".
+
+* We can statistically control for variables if we wish to: so in a study with height and weight as explanatory variables we can ask the question "What is the effect of weight when height has been taken into account?" --- in other words, what is the effect of an individual being heavier or lighter than would be expected for someone of that height.
+
+* We can look for *interactions* between explanatory variables which arise when the effect of one variable depends on the level of the other.
+
+In this tutorial we'll look at analysing linear models with more than one factor as the explanatory variables. These linear models are often called "multi-factor ANOVA" or you might see them called a "two-way ANOVA" or similar depending on the number of explanatory factors used.
+
+## Two-factor linear model example
+
+The data we'll be looking at here come from a study on the effect that paternal exposure to nicotine has on the behaviour of their descendants, as published by McCarthy and co-authors in 2018^1^. The dataset we will use is a small subset of what was presented in their paper, and deals with  the spontaneous locomotor activity that the F1 offspring of nicotine exposed or control males mated with unexposed females exhibited over a 12 hour period. Locomotor activity was measured by placing the animals in a testing chamber with a series of infra-red beams arranged in a grid, and each time a beam was broken this was logged as a single locomotory event. Our dataset includes data from both male and female F1 offspring.
+
+Let's load it from github and sheck its structure.
+
+```{r}
+
+mouse_movement <-
+  read.csv(
+    "https://github.com/rjknell/Linear_models/raw/master/data/McCarthy_mice_activity.csv",
+    stringsAsFactors = TRUE
+  )
+
+str(mouse_movement)
+```
+Because we specified `stringsAsFactors = TRUE` as an argument both `Treatment` and `Sex`have been imported as factors. `SLA` (Spontaneous Locomotory Activity) is our response variable and is the count of all the recorded times an infra-red beam was broken during the 12-hour period. `Sex` is the sex of the F1 mouse in question, and `Treatment` is the treatment the father of the mouse was exposed to: "water" where the mouse was given plain drinking water and "nicotine" where the mouse was given drinking water containing 200µg/mL nicotine for 12 weeks. Let's look at our sample sizes for each factor combination.
+
+```{r}
+table(mouse_movement$Sex:mouse_movement$Treatment)
+```
+
+The data are somewhat unbalanced, with sample sizes ranging from 11 to 18 and overall rather more data for the controls whose fathers were given water but there's no combination with a really small or large sample size by comparison to the others. Now let's vsualise these data with a boxplot.
+
+```{r}
+boxplot(SLA ~  Treatment * Sex, 
+        data = mouse_movement,
+        xlab = "Treatment & Sex",
+        ylab = "SLA(movements/12h)")
+```
+Looking at this we can see some patterns: spontaous movement rates seem more common in females and in animals with fathers exposed to nicotine, but as always we need to do some statistics to give us an idea of how confident we can be that thses patterns aren't just a consequence of sampling error. The boxplots are also at least approximately symmetrical which tells us that these data aren't strongly skewed. Ther do seem to be some differences in variance between the groups such that the mice with fathers exposed to nicotine have rather wider IQRs than those whose fathers were given plain water. It's not 100% clear how severe this is but we should keep an eye out for evidence of heterogeneous variances when we look at our diagnostic plots.
+
+Fitting linear models with multiple explanatory variables in R simply involves adding new elements to the formula that is the first argument of the `lm()` function.
+
+`SLA ~ Treatment` will fit a model with `Treatment` as the explanatory factor.
+
+`SLA ~ Treatment + Sex` will fit a model with both `Treatment` and `Sex` as the explanatory factors but with no interaction between them --- in other words the *main effects* of the two factors only.
+
+`SLA ~ Treatment + Sex + Treatment:Sex` will fit a model with both `Treatment` and `Sex` as explanatory factors but also with the interaction between the two (specified here by `Treatment:Sex`).
+
+`SLA ~ Treatment * Sex` will, in this case, fit the same model as the previous example. The asterisk `*` means "fit all the main effects and also all the interactions. Here there can only be one interaction because there are only two explanatory factors. If there were a third factor, however, for example `Diet` (good or bad) then
+
+`SLA ~ Treatment*Sex*Diet` would fit all three main effects, the two-way interactions between `Treatment` and `Sex`, between `Treatment` and `Diet` and between `Diet` and `Sex`, and also the three-way interaction between `Treatment`, `Sex` and `Diet`.
+
+`SLA ~ Treatment + Sex + Diet + Treatment:Sex + Treatment:Diet` will fit all three main effects plus two interaction terms only, namely those between `Treatment` and `Sex` and between `Treatment` and our fictional `Diet` factor.
+
+Let's fit a model with both main effects and the interaction, and then bring up an ANOVA table to get an idea of the statistical significance of our explanatory variables.
+
+```{r}
+mouse1 <- lm(SLA ~ Treatment * Sex, data = mouse_movement)
+
+anova(mouse1)
+```
+
+1: McCarthy, D.M., Morgan, T.J., Jr, Lowe, S.E., Williamson, M.J., Spencer, T.J., Biederman, J. & Bhide, P.G. (2018) Nicotine exposure of male mice produces behavioral impairment in multiple generations of descendants. PLoS biology, 16, e2006497.
 
