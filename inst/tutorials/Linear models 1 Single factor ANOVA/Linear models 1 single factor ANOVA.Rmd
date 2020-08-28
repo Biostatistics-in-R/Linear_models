@@ -16,7 +16,7 @@ description: >
 ```{r setup, include=FALSE}
 library(learnr)
 library(gplots)
-knitr::opts_chunk$set(echo = TRUE, comment = NA)
+knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.width = 5, fig.height = 5)
 ragwort <-
   read.csv(
     "https://github.com/rjknell/Linear_models/raw/master/data/Wang_et_al_plant_only.csv",

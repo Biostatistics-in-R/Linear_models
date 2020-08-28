@@ -15,9 +15,571 @@ description: >
 
 ```{r setup, include=FALSE}
 library(learnr)
-knitr::opts_chunk$set(echo = TRUE, comment = NA)
+knitr::opts_chunk$set(echo = TRUE, comment = NA, fig.width = 5, fig.height = 5)
+
+gabon <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Koerner_et_al_2017.csv", stringsAsFactors = TRUE)
+
 ```
 
 
 ## Fitting lines to bivariate data
 
+We very often find ourselves with sets of *bivariate data*: two separate variables have been measured for each thing we're interested in. This might be genetic variability and distance from another population, it might be nutrient intake and immune response, it might be height on a mountain and the size of a plant, or it might be any number of combinations of variables. Quite often in these circumstances we are interested in the effect that one variable (often called the *independent* variable) has on another (the *dependent* variable). Sometimes we find complex relationshpis between variables wthat have to be described by some form of curve, but sometimes we are lucky and there is a simple relationship between the two which we can describe with a straight line. In this case we can use a type of linear model where instead of relating our response variable to an explanatory variable which is a factor with discrete levels, as you saw when we were looking at ANOVA, we use a continuous explanatory variable and we describe the relationship in terms of the slope and the intercept of the straight line which best describes how the dependent variable changes with the independent variable. This form of analysis is often called *linear regression* and the basics are explained in this video:
+
+VIDEO
+
+Let's work though an example of a linear regression. The `Latitude_diversity` data set contains data on tree diversity from 24 forest plots in locations ranging from the tropics to northern Europe and the USA^1^. One of the measures we have for each plot is the Shannon diversity index, a measure of the overall diversity of trees present, and another is the latitude of the plot. Let's have a look at these data with a scatterplot. 
+We'll use the absolute value of latitude because some values are negative (the plot is South of the Equator) but the pattern we're interested in is how diversity changes with distance from the equator.
+
+```{r fig.cap = "**Figure 1** Shannon diversity for trees plotted against latitude for 24 forest plots"}
+
+diversity <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Latitude_diversity.csv")
+
+plot(Shannon_diversity ~ abs(Latitude),
+            data = diversity,
+            pch = 16,
+            col = "aquamarine4",
+            ylab = "Shannon diversity",
+            xlab = "Absolute latitude")
+```
+As you can see the Shannon diversity index decreases with increasing latitude, and just from looking at these data we can see that they might be suitable for linear regression analysis. We have a clear potential direction of causality (diversity does not cause latitude but latitude might cause diversity), the relationship is not obviously different from a straight line and the data don't have any obvioius skew, outliers or other wierdness.
+
+If we want to find the line that best allows us to predict the Shannon diversity of a patch of forest from its latitude, we can fit a linear regression using the `lm()` (for linear model) function with a *formula* specifying exactly what we want the function to fit, much as we've seen for ANOVA and also for plotting data --- in fact the formula we'll use with `lm()` here is exactly the same as the one we used to generate the plot. We have the *response variable* (AKA the dependent variable), then a *tilde* (~), the symbol which means "as explained by" in an R formula, and then the *explanatory variable*, AKA the independent variable. If both are in the same data frame we can use the `data = ` argument to tell R where to look. To fit a linear model to these data, therefore we can use this code:
+
+```{r}
+L1 <- lm(Shannon_diversity ~ abs(Latitude), data = diversity)
+
+L1
+```
+Just inputting the name of the fitted `lm()` object returns the formula and the model coefficients. The first one, labelled *Intercept* is the y-intercept, or the predicted value when the explanatory variable is zero, which in this case would be the predicted Shannon diversity at the equator, which is 4.82. The second one, labelled with the name of the *explanatory variable* is the slope of the relationship, or in other words the amount by which we predict the Shannons diversity index to change with every degree of increase in latitude. Putting these into the equation of a straight line we get:
+
+$$ y = -0.0741 \times |latitude| + 4.82$$
+and we can draw this onto our scatterplot using the `abline()` function.
+
+```{r fig.cap = "**Figure 2** Shannon diversity for trees plotted against latitude for 24 forest plots with a line fitted from a linear regression"}
+
+plot(Shannon_diversity ~ abs(Latitude),
+            data = diversity,
+            pch = 16,
+            col = "aquamarine4",
+            ylab = "Shannon diversity",
+            xlab = "Absolute latitude")
+
+abline(
+  a = 4.82,
+  b = -0.0741,
+  lwd = 1.5,
+  col = "aquamarine4"
+)
+```
+
+Is the line a good fit to the data? It's not perfect of course because there's a fair amount of noise in these data but just from looking at it we can see that it's going to be difficult to find anything better. Is the line statistically significant? As we saw in the video, fitting a linear regression involves partitioning variance in a very similar way to what happens with an ANOVA, and just like an ANOVA we can carry out an F-test to see if the amount of variance explained by our fitted model (the treatment variance or the treatment MS) is greater than that which is unexplained (the error variance or MS error, or as R labels it the residual variance). Using the `anova()` function on our model will generate an ANOVA table just like the one we saw when we looked at single factor ANOVA.
+
+```{r}
+anova(L1)
+```
+This is calculated in the same way as the ANOVA table for a single factor ANOVA, except that instead of calculating the SS error (or the Residual Sum of Squares as R calls it) by subtracting a group mean from each data point we subtract the predicted value of the fitted line: so if we have a data point which has a latitude of 9.15 and a Shannon diversity of 4.0 (This is Barro Colorado Island, Panama in our data) the predicted value is $4.82 - 0.0741 \times 9.15 = 4.142$. $(x - \bar{x})^2$ is therefore $\left( 4.0 - 4.142 \right)^2 = 0.020$ for this particular data point. Just to make the point we can calculate our sums of squares separately.
+
+```{r}
+SSTotal <- sum((diversity$Shannon_diversity - 
+                  mean(diversity$Shannon_diversity))^2)
+
+SSError <- sum((diversity$Shannon_diversity - 
+                  (4.82 - 0.0741 * abs(diversity$Latitude)))^2)
+               
+SSTreatment <- SSTotal - SSError
+
+cat("SSTreatment = ",SSTreatment)
+cat("SSError = ",SSError)
+```
+
+Compare these to the ANOVA table above and you can see that they match the entries in the Sum Sq column. The Mean square values are just the Sums of Squares divided by the degrees of freedom and the F statistic is the Mean square treatment (labelled as `abs(Latitude)` here) divided by the Mean Square error (labelled `Residuals` here).
+
+In practice we don't need to calculate our sums of squares separately, nor do we even need to use `anova()` to get an ANOVA table for our linear regression. If we use `summary()` on our fitted model object we can get all the information we need.
+
+```{r}
+summary(L1)
+```
+The model summary should be somewhat familiar to you from the ANOVA tutorial. Here it follows the same layout, so we have a reminder of what the model formula is, some summary statistics for the *residuals*, then the table of coefficients. This table has the estimate for the intercept and the slope of the line, their standard errors and some p-values derived from marginal t-tests. The p-value for both the intercept and the slope tell us in this case that they are both significantly different from zero. That's not especially useful for the intercept except in some particular cases, but it is of course an important hypothesis test for the slope: the null hypothesis for most linear regressions is that the slope is equal to zero. If you've ever been taught to test for the significance of a regression using a t-test this is the equivalent of what you were taught previously.
+
+After the coefficients table there are some summary statistics for our model fit. The most commonly used one of these is the R-squared value (here written as "Multiple R-squared") which is telling us the proportion of the overall variation which is explained by our model. This is the same as the R-squared value that you might have enountered in correlation analysis and we can derive it ourselves from the SSTreatment and SSTotal which we calculated earlier:
+
+```{r}
+SSTreatment / SSTotal
+```
+
+Which is the same value as the one in the table. So overall, latitude explains 63% of the overall variaotin in diversity. In ecology at least that's a high value for r-squared and indicates that the relationship between latitude and diversity is a strong one. The adjusted R-squared value is adjusted by the number of explanatory variables in the model and we can ignore it because a) we've only got one explanatory variable and b) no-one uses it anyway.
+
+The last line of the output from `summary()` gives us the same F-statistic and test that we had form our ANOVA table. You might notice that the p-value from the t-test in the coefficients table is in fact exactly the same as the one for the F-test based on partitioning the variance. This is the case for linear regression with a single explanatory variable only so be a little careful about the marginal value from the coefficients table: yes in this case it's also equivalent to a significance test for the whole model, but don't think it is when you're dealing with more complex statistical models with multiple explanatory variables. It's quite common for people to get a bit confused over this so best to make it clear now.
+<br><br><hr>
+
+1: Originally published in LaManna, J.A., Mangan, S.A., Alonso, A., Bourg, N.A., Brockelman, W.Y., Bunyavejchewin, S., Chang, L.-W., Chiang, J.-M., Chuyong, G.B., Clay, K., Condit, R., Cordell, S., Davies, S.J., Furniss, T.J., Giardina, C.P., Gunatilleke, I.A.U.N., Gunatilleke, C.V.S., He, F., Howe, R.W., Hubbell, S.P., Hsieh, C.-F., Inman-Narahari, F.M., Janík, D., Johnson, D.J., Kenfack, D., Korte, L., Král, K., Larson, A.J., Lutz, J.A., McMahon, S.M., McShea, W.J., Memiaghe, H.R., Nathalang, A., Novotny, V., Ong, P.S., Orwig, D.A., Ostertag, R., Parker, G.G., Phillips, R.P., Sack, L., Sun, I.-F., Tello, J.S., Thomas, D.W., Turner, B.L., Vela Díaz, D.M., Vrška, T., Weiblen, G.D., Wolf, A., Yap, S. & Myers, J.A. (2017) Plant diversity increases with the strength of negative density dependence at the global scale. Science, 356, 1389–1392.
+
+## Linear regression assumptions and diagnostics
+
+As with all linear models, there are certain assumptions regarding the data we're analysing which need to be met, or at least partially met, for our analysis to be valid. We've looked at most of these in detail in the tutorial for ANOVA, but just as a reminder the assumptions for ANOVA are:
+
+1. **Independence of data** --- we're assuming that there is no underlying structure in our data set that makes some data points more similar than others. This might arise if we had 10 measurements of mouse weight but four of the mice were siblings while the rest were unrelated. If this were the case then the four siblings would probably be more similar to each other than to the rest of the mice, which would violate our assumption of independence. This is more of an issue for experimental design than analysis but it is also arguably the most important.
+
+2. **Normal errors** --- when we subtract the predicted values from the actual data, what's left (the *residuals*), which represents the *error* or the variance we're unable to explain, should be at least approximately normally distributed. Just as a reminder, the assumption is that the *errors* are normal, not that the response variable overall is normally distributed.
+
+3. **Equality of variance** --- for ANOVA this means that the variance for alll the groups should be approximately equal, for regression it means that the variance should not change much as we go from low to high values of the explanatory variable. In other words the amount of spread around the fitted line should be roughly the same at all values of the explanatory variable.
+
+Finally, there is a fourth assumption which we make for linear regression but not ANOVA which is **linearity** --- we're fitting a straight line to describe the relationship between our response and explanatory variable, but if the relationship between them is actually better described by a curve of some sort rather than a straight line then it's going to be better to fit a curve.
+
+As we did with our ANOVA we can use diagnostic plots to check how well our data conform to these assumptions. Here's a link to the video we looked at for the ANOVA tutorial in case you need reminding:
+
+VIDEO
+
+Let's check our fitted linear regression using the `plot()` function on our fitted model object. We'll just look at the first two diagnostic plots becuse they're the most informative.
+
+```{r}
+
+# PLot the first and second diagnostic plots
+plot(L1, which = 1:2)
+
+```
+
+On the left we have the plot of residuals versus fitted values, and on the right we have the qq plot of the residuals. What we're hoping to see in the residuals vs fitted values plot is a cloud of points with no pattern, centred vertically around zero. For the qq plot we'd like to see all of our points nicely lined up, which is what we'd see if the residuals followed a normal distribution closely.
+
+Starting with the left-hand plot, there's no obvious pattern in terms of changing variances or curves that might indicate non-linearity. There are some points with rather large negative residuals and these reflect the couple of data points with lower diversity for their latitude that you can see on the scatterplot we drew earlier. Should we be concerned about this? Maybe, maybe not. R has kindly given us their row numbers (10 and 11) and if we look at where these two points are from
+
+```{r}
+diversity$Country[10:11]
+```
+
+We find that both are from Hawaii. Let's just visualise them on th scatterplot with a fitted line which we drew before.
+
+```{r fig.cap = "**Figure 4** Shannon diversity for trees plotted against latitude for 24 forest plots with a line fitted from a linear regression, with data from Hawaii indicated by a black circle"}
+
+plot(Shannon_diversity ~ abs(Latitude),
+            data = diversity,
+            pch = 16,
+            col = "aquamarine4",
+            ylab = "Shannon diversity",
+            xlab = "Absolute latitude")
+
+points(diversity$Shannon_diversity[diversity$Country == "Hawaii USA"] ~ abs(diversity$Latitude[diversity$Country == "Hawaii USA"]),
+            cex = 2)
+
+abline(
+  a = 4.82,
+  b = -0.0741,
+  lwd = 1.5,
+  col = "aquamarine4"
+)
+```
+
+
+We have two points from the same place both of which are uncharactersitically far from the line. Because linear models are fitted by minimsing the *squared* distances from each data point then data which are far from the line can have substantial effects on the overall fit of the model and these two data points are probably pulling the line further towards the x-axis than it would otherwise be. Should we keep them in? It is possible that there is something special about Hawaii which means that the diversity here doesn't follow the same patterns as in other parts of the world --- Hawaii is more isolated than all the other locations, and is geologically relatively recent. On that basis it could be that if we excluded these data we would get a better description of the relationship between tree diversity and latitude in continental or near-continental locations. If that was our main aim with this analysis then such an exclusion might be justified, but if we are interested in the overall patterns of diversity and are not concerned about whether our data are from isolated islands or not then we might keep these data in the analysis. In general it's best to be very cautious about excluding data from an analysis and only to do it when there is a very good reason to do so.
+
+The qq plot is just about acceptable. The residuals with the highest and lowest values are both below the line, indicating that the lowest values are smaller than we would expect (this reflects the low values for diversity in Hawaii which we just discussed) and the highest values are also a little lower than expected. Most of the points are on the line or close to it, however, and it's not obvious that there's much we could do to make things better aside from removing the two Hawaiian data points, and you should be reluctant to do that without a really compelling reason.
+
+As a final note, you might have spotted that these data are actually violating our assumption of independence to some extent because of their geographical locations. Two data points are from Hawaii, and we've seen that they are both rather similar to each other and different from all the others. There are also several from SE Asia and a whopping nine from the Continental USA. Because of their geographical closeness these data are more likely to be similar to each other than to data points from similar latitudes but from further away. Is this a concern? Yes and no... in practice it is often difficult or impossible to remove all dependence between our data and so, as scientists, we tend to tolerate some non-independence, with the amount we are prepared to overlook being really a judgement call that's based on intuition, how accurate we need to be with our estimates of effect size and (realistically) what we think others, including potential reviewers, will be OK with.
+
+Some non-independence between data can actually be controlled for statistically, so if we were really concerned about this *spatial autocorrelation* in our data we could use an analysis technique that took it into account, but that is a rather advanced topic so we'll leave it at that.
+
+
+## Exercise 1: analysing bird abundance near villages in Gabon
+
+In 2017, Sally Koerner and co-authors^1^ published a study of how animal abundance changes with distance from villages in Gabon. This involved establishing 24 2.5km transects at varying distances from the nearest village, monitoring them monthly and recording all of the mammals and birds encountered. We'll look at a small subset of their data, focussing on how the relative abundance of ungulates and rodents changed with the distance from the nearest village. Relative abundance was calculated for each group of animals as the percentage of all encounters on that transect which were with that particular group.
+
+We can load these data from Github:
+
+```{r eval = FALSE}
+gabon <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Koerner_et_al_2017.csv", stringsAsFactors = TRUE)
+```
+
+Whenever we load some data it's a good idea to look at the structure of the freshly imported data frame with the `str` function.
+
+```{r structure, exercise=TRUE}
+
+
+```
+
+```{r structure-hint-1}
+# This is very straightforward: just use 
+# str() with the name of the data frame in question
+```
+
+```{r structure-hint-2}
+# This is the solution:
+
+str(gabon)
+```
+
+You should see that we have quite a few variables in this data frame of varying types, so `TransectID` and `NumHouseholds` are integers, there are quite a few numeric variables including some describing the environment around the transect, such as Veg_canopy which is a measure of how closed the canopy is in the area, and also our measures of the relative abundance of the different groups of animals (`RA_Apes`, `RA_Birds` etc) are also numeric vectors. Finally we have two factors, `LandUse` and `HuntCat` which have imported as factors becuase we set `stringsAsFactors = TRUE` in our `read.csv()` function call. We're not going to look at these further in this exercise but whenever you import a factor it's a good idea to check that the number of levels is correct because if there is any problem with the data it can often show up here. In this case we know that there should be three levels of each so that's OK.
+
+For this exercise we're just going to use the relative abundance data and the distance from each village. We'd like to know how the relative abundance of some of these groups of animals changes with how far the transect is from the nearest village, and we'll use linear regression to do this. We're not going to do this for all the animal groups, rather for this exercise we'll just look at the birds.
+
+If we want to look at the relationship between relative abundance and distance, it's clear which variables are response and explanatory (or dependent and independent) --- firstly we are interested in the processes affecting animal abundance not village geography, and secondly the relative abundance of birds, rodents or ungulates is unlikely to be affecting the distance from the nearest village, but the distance might be affecting the relative abundance, so there is a fairly clear direction of causality. This means `Distance` is going to be the explanatory variable in all of our analyses. 
+
+Let's start with the birds. As always, before we do anything else we'll plot out our data and have a look at it. In this case we'd like a scatterplot with `RA_Birds` on the y-axis and `Distance` on the x-axis. Don't forget to add sensible axis labels.
+
+```{r bird_plot, exercise = TRUE, exercise.lines = 6}
+
+```
+
+```{r bird_plot-hint-1}
+# This is just a scatterplot like the ones we 
+# were looking at before. Use the plot() function
+# Remember y-variable ~ x-variable for the formula, 
+# tell R which dataframe to use with data = 
+# and specify the x- and y-axis labels with
+# xlab =  and ylab = 
+```
+
+```{r bird_plot-hint-2}
+# Don't forget to check that there are commas 
+# between each argument and that your brackets match
+```
+
+```{r bird_plot-hint-3}
+# The formula is
+RA_Birds ~ Distance
+
+# The dataset is specified with
+data = Distance
+
+# The axis labels are something like
+xlab = "Distance from nearest village (Km)"
+
+# and
+
+ylab = "Relative abundance of birds"
+```
+
+
+```{r bird_plot-hint-4}
+# This is the solution
+
+plot(RA_Birds ~ Distance,
+     data = gabon,
+     xlab = "Distance from nearest village (Km)",
+     ylab = "Relative abundance of birds")
+```
+
+Looking at this plot you can see that there appears to be a negative relationship between distance and relative abundance of birds. Can you see anything in the plot that might be a cause for concern with regards to fitting a linear regression to these data?
+
+There aren't any obviously problematic data points, so none with values that are clearly radically different from all of the rest, or with values which would be impossible such as a negative relative abundance or a distance of 20000 Km from the nearest village. There's maybe a hint of non-linearity if you squint and turn the plot sideways but nothing more than that, and there's nothing in the plot to suggest big changes in variance as distance increases or decreases. All in all these data look quite well behaved so let's go ahead and fit a regression. You need to save the regression as an object and I would suggest `B1` as a suitable name. Fill in the correct variable names to replace "response" and "explanatory" in the formula to fit your regression and then add a line to bring up the summary of the B1 object.
+
+```{r bird_regression, exercise = TRUE}
+
+B1 <- lm(response ~ explanatory, data = gabon)
+
+```
+
+```{r bird_regression-hint-1}
+# The response variable is RA_Birds
+# The explanatory variable is Distance
+```
+
+```{r bird_regression-hint-2}
+# Use the summary() function to access
+# the summary of the fitted model
+```
+
+```{r bird_regression-hint-3}
+#This is the solution
+
+B1 <- lm(RA_Birds ~ Distance, data = gabon)
+
+summary(B1)
+```
+
+You can see that we have a highly significant negative relationship between distance and the relative abundance of birds. Before we go any further we should check our diagnostics: use the `plot()` function to generate the residuals versus fitted values plot and the qq plot of the residuals. Remember that we can choose the first two diagnostic plots by using the `which = 1:2` argument.
+
+```{r prepare-birds}
+B1 <- lm(RA_Birds ~ Distance, data = gabon)
+```
+
+```{r bird_diagnostics, exercise = TRUE, exercise.setup = "prepare-birds"}
+
+
+```
+
+```{r bird_diagnostics-hint-1}
+# Just use plot() with the name of your saved
+# object as the first argument and which = 1:2
+# as the second argument
+```
+
+```{r bird_diagnostics-hint-2}
+# This is the solution
+
+# Diagnostic plots
+plot(B1, which = 1:2)
+```
+
+These diagnostic plots are pretty good. There's no suggestion of any problems in the residuals versus fitted values plot and although we have some deviation from our straight line for the highest and lowest residuals in the qq plot there's nothing that should cause us concern.
+
+Now that we're happy with our diagnostics we can think about what our regression is telling us. Here's the summary output again.
+
+```{r echo = FALSE}
+B1 <- lm(RA_Birds ~ Distance, data = gabon)
+```
+
+```{r}
+summary(B1)
+```
+
+Try to answer these questions using the summary output.
+
+```{r bird_regression_quiz, echo=FALSE}
+
+quiz(
+caption ="Bird regression quiz", 
+question("Which of the following are true?",
+  answer("At a distance of zero the relative abundance of birds is predicted to be 16.035", message  = "Answer 1: The estimated relative abundance of birds at a distance of zero is given by the intercept \n"),
+  answer("At a distance of 10Km the relative abundance of birds is predicted to be 76.83"),
+  answer("At a distance of zero the relative abundance of birds is predicted to be 76.83", correct = TRUE),
+  answer("At a distance of 20Km the relative abundance of birds is predicted to be 46.21", correct = TRUE),
+  answer("At a distance of 5Km the relative abundance of birds is predicted to be 84.49", message = "Answer 5: This is calculated incorrectly with the slope being positive rather than negative")
+),
+
+question("Which of the following are true?",
+  answer("For every Km distance from the nearest village, the relative abundance of birds is predicted to decline by 0.281%", message = "Answer 1: 0.281 is the standard error of the slope, not the slope itself \n"),
+  answer("For every Km distance from the nearest village, the relative abundance of birds is predicted to decline by 1.53%", correct = TRUE),
+  answer("The fitted model explains 57.5% of the total variance in the response variable", correct = TRUE),
+  answer("The fitted model explains 55.5% of the total variance in the response variable", message = "Answer 4: This value is the adjusted R-squared, which is not really informative here. You want the multiple R-squared \n"),
+  answer("The intercept is significantly different from zero", correct = TRUE),
+  answer("The slope of the fitted line is not significantly different from zero", message = "Answer 6: The null hypothesis for the test of significance of the regression is that the slope is zero. Our p-value is 0.0000177 (1.77e-05) which is well below the cut off of 0.05 so we will reject the null")
+)
+)
+```
+
+Finally, let's visualise our fitted regression by replotting our scatterplot and using the `abline()` function to add a line. *Top tip* --- if you give `abline()` the name of a fitted linear regression object as an argument it will extract the intercept and slope itself and draw the fitted line for you.
+
+```{r birds_regression_plot, exercise = TRUE, exercise.lines = 8, exercise.setup = "prepare-birds"}
+
+
+```
+
+```{r birds_regression_plot-hint-1}
+# You can paste in the scatterplot code from the previous exercise
+# Then add the abline() function
+```
+
+```{r birds_regression_plot-hint-2}
+# This is the solution
+
+plot(RA_Birds ~ Distance,
+     data = gabon,
+     xlab = "Distance from nearest village (Km)",
+     ylab = "Relative abundance of birds")
+
+abline(B1)
+```
+
+
+1: Koerner, S.E., Poulsen, J.R., Blanchard, E.J., Okouyi, J. & Clark, C.J. (2017) Vertebrate community composition and diversity declines along a defaunation gradient radiating from rural villages in Gabon. The Journal of applied ecology, 54, 805–814.
+
+## Exercise 2: analysing ungulate abundance near villages in Gabon
+
+As a second exercise, we'll look at the relative abundance of ungulates and how it changes with distance from the nearest village in Gabon, using the same dataset. As before, the first thing to do is to look at a scatterplot. You should be able to do this based on what we've done already --- the variable name for ungulate relative abundance is `RA_Ungulate`.
+
+```{r ungulates_scatterplot, exercise = TRUE, exercise.lines = 5}
+
+```
+
+```{r ungulates_scatterplot-hint-1}
+# Use the plot() function and put in a formula
+# with RA_Ungulate as the response variable, then 
+# a tilde ~ and then the explanatory variable which
+# is Distance
+# 
+# Specify appropriate x- and y-axis labels using
+# xlab =  and ylab =
+# 
+# You also need to include the data = gabon argument
+```
+
+```{r ungulates_scatterplot-hint-2}
+#Here's a code framework for you to adapt:
+
+plot(response ~ explanatory,
+     data = gabon,
+     xlab = "",
+     ylab = "")
+```
+
+```{r ungulates_scatterplot-hint-3}
+#Here's the solution:
+
+plot(RA_Ungulate ~ Distance,
+     data = gabon,
+     xlab = "Distance from nearest village (Km)",
+     ylab = "Relative abundance of ungulates")
+```
+
+Looking at the plot, you can see that there seems to be something of a positive relationship between the variables, with higher values for ungulate relative abundance associated with longer distances from the nearest village. The pattern is less clear than for our birds however, and the data seem to be rather wedge-shaped, with more spread associated with longer distances. Let's fit a model and save it as an object called U1, and then call up a summary using `summary()`
+
+```{r ungulates_mod1, exercise = TRUE}
+
+```
+
+```{r ungulates_mod1-hint-1}
+#Here is a code framework to help you
+
+Name <- lm(response ~ explanatory, data = gabon)
+
+summary()
+```
+
+```{r ungulates_mod1-hint-2}
+# This is the solution
+
+U1 <- lm(RA_Ungulate ~ Distance, data = gabon)
+
+summary(U1)
+```
+
+OK, that seems to have worked and the summary is telling us that we have a significant relationship between distance and ungulate relative abundance. Let's jump straight in and look at the diagnostics. Once again we just want the first two plots so specify `which = 1:2` as an argument to `plot()`.
+
+```{r prepare-ungulates}
+U1 <- lm(RA_Ungulate ~ Distance, data = gabon)
+```
+
+```{r ungulate_diagnostics, exercise = TRUE, exercise.setup = "prepare-ungulates"}
+
+
+```
+
+```{r ungulate_diagnostics-hint-1}
+# Just use plot() with the name of your saved
+# object as the first argument and which = 1:2
+# as the second argument
+```
+
+```{r ungulate_diagnostics-hint-2}
+# This is the solution
+
+plot(U1, which = 1:2)
+```
+
+Look at these residual plots and try to answer these questions.
+
+```{r ungulate_diagnostics_quiz, echo=FALSE}
+
+quiz(
+caption = "Ungulate diagnostics",
+question("What do you conclude from the plot of residuals versus fitted values?",
+  answer("There is no pattern and so our fitted model seems valid"),
+  answer("The plot is mostly OK but there are a couple of data points with large negative residuals that could be influencing our results"),
+  answer("There is strong evidence that the relationship is actually non-linear"),
+  answer("There is a wedge-shaped pattern of residuals, indicating that the variance is increasing with increasing distance", correct = TRUE)
+),
+
+question("What do you conclude from the qq plot of the residuals?",
+  answer("Most residuals are approximately normally distributed but there are a few data points with high positive residuals which are more positive than we would expect if they were following a normal distribution", correct = TRUE),
+  answer("Most residuals are approximately normally distributed but there are a few data points with high positive residuals which have smaller values than we would expect if they were following a normal distribution"),
+  answer("The qq-plot shows the typical pattern found when the errors are positively skewed"),
+  answer("The qq plot shows that the residuals are following a Poisson distribution")
+)
+)
+```
+
+## Exercise 3 dealing with heteroskedastic data
+
+The residuals versus fitted values plot for our ungulate regression confirms what we thought might be the case with regards to the increasing variance in the data as the distance from the nearest village increases. This means that we have *heteroskedastic* data and this is not an ideal one for fitting a linear model. We have a number of options now to try to deal with this. They are:
+
+1. Ignore it on the grounds that linear models are robust to violations of these assumptions
+2. Use an analysis which allows us to explicitly model the changing variance with the increasing distance (e.g. a weighted least squares approach using the `gls()` function from the nlme package).
+3. Transform our response variable somehow so that it is better behaved and reanalyse.
+
+Option 1 has its merits and we could consider this depending on what we're trying to do. If we're really just concerned about demonstrating that there's a relationship between the two variables and aren't particularly bothered about how well our line is estimated this might be OK (although if that's the case why not just do a correlation analysis?). If, however, we want do something like compare the degree of change with distance between ungulates and other mammal groups then we want our estimate of the slope and intercept to be as good as possible and we might not want to just leave it as it is.
+
+Option 2 is definitely a possibility but it's a little advanced for our purposes and probably best left for another day.
+
+This leaves us with option 3: transform our data and reanalyse. There are lots of options here and the most common approach would be repeat the analysis with log transformed data: taking logs has a bigger effect on large values than on small values, so it tends to reduce variance more for large values than for small ones. Log transforming these data isn't completely straightforward, however, because we have one data point with a value of zero and the log of this is -infinity. One solution to this is to add some constant, for example 1, to each datapoint before taking logs. This works and is something that is done a lot but it does mean we're changing our data quite a lot before analysing it and also the choice of constant (should we use 0.1? 1? 100?) can alter the distribution of the data and change the output of the analysis.
+
+An alternative to log-transformation is to use a square root transformation. This alters the distribution of the data somewhat less than a log transformation and also avoids the problem with the zero value in the dataset. Try refitting the model to the square root of relative abundance and check the diagnostic plots again. Remember that you can do the transformation within the formula in the `lm()` function call. Call your new model object [U2](https://en.wikipedia.org/wiki/Wikipedia:Lamest_edit_wars).
+
+```{r sqrt_lm, exercise = TRUE}
+
+
+```
+
+```{r sqrt_lm-hint-1}
+# The function to calculate a square root is sqrt()
+```
+
+```{r sqrt_lm-hint-2}
+# The arguments you want in your lm() function call is
+
+sqrt(RA_Ungulate) ~ Distance, data = gabon
+```
+
+```{r sqrt_lm-hint-3}
+# To plot the diagnostics you want:
+
+plot(U2, which = 1:2)
+```
+
+```{r sqrt_lm-hint-4}
+# This is the solution
+
+U2 <- lm(sqrt(RA_Ungulate) ~ Distance, data = gabon)
+
+plot(U2, which = 1:2)
+```
+
+You can see that the residuals versus fitted values plot no longer has that wedge shape, and also that the qq plot looks rather better. Let's look at the summary output for our new model.
+
+```{r prepare-ungulates2}
+U2 <- lm(sqrt(RA_Ungulate) ~ Distance, data = gabon)
+```
+
+
+```{r sqrt_lm_summary, exercise = TRUE, exercise.setup = "prepare-ungulates2"}
+
+```
+
+```{r sqrt_lm_summary-hint-1}
+# You just need to call summary on the U2 object
+
+summary(U2)
+```
+
+Here are some questions about the summary table. Remember this regression was fitted to the square root transformed relative abundance data, not the raw data.
+
+```{r ungulate_regression_quiz, echo=FALSE}
+
+quiz(
+caption ="Ungulate regression quiz", 
+question("Which of the following are true?",
+  answer("At a distance of zero the relative abundance of ungulates is predicted to be 0.490", correct  =TRUE),
+  answer("At a zero  the relative abundance of ungulates is predicted to be 0.699", message = "Answer 2: this is the square root of the predicted realtive abundance of ungulates. You need to square the predicted values to get predicted relative abundances \n"),
+  answer("At a distance of 10km the relative abundance of ungulates is predicted to be 1.611", message = "Answer 3: You need to square the predicted values to get predicted relative abundances \n"),
+  answer("At a distance of 20Km the relative abundance of ungulates is predicted to be 6.36", correct = TRUE)
+),
+
+question("Which of the following are true?",
+  answer("For every Km distance from the nearest village, the relative abundance of ungulates is predicted to increase by 0.0912", message = "Answer 1: This is the slope for the relationship  between the square root of relative abundance and distance \n"),
+  answer("For every Km distance from the nearest village, the square root of the relative abundance of ungulates is predicted to increase by 0.0912", correct = TRUE),
+  answer("The fitted model explains 42.7% of the total variance in the response variable", correct = TRUE),
+  answer("The intercept is not significantly different from zero", message = "Answer 4: it is significantly different from zero as you can see from the marginal p-value of 0.035 \n"),
+  answer("The slope of the fitted line is significantly different from zero", correct = TRUE)
+)
+)
+```
+
+Finally, we need to visualise our data with the fitted model. We could plot the transformed data with the straight line we've fitted, but that would not allow for useful comparisons with other analyses where we haven't transformed the data, such as the birds. Furthermore, plotting the transformed data it makes it harder to get a good understanding of the pattern we've ddescribed in our data. A better option is to plot the back transformed predicted values onto the untransformed data. There are a variety of ways to do this but one option is to use the `curve()` function like this.
+
+```{r}
+
+# Plot the data
+plot(RA_Ungulate ~ Distance,
+     data = gabon,
+     xlab = "Distance from nearest village (Km)",
+     ylab = "Relative abundance of ungulates")
+
+# Generate a function which calculates backtransformed 
+# predicted values 
+U2_fitted <- function (x) (0.6997 + 0.0912 * x)^2
+
+# Draw the function on with curve. NB add = TRUE
+# means that the curve is plotted over the previous plot,
+# otherwise it will generate a new graph.
+curve(U2_fitted, add = TRUE)
+```
