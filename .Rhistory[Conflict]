@@ -1,0 +1,512 @@
+# the tick labels
+axis(
+side = 1,
+at = 1:4,
+labels = c("Nicotine", "Water", "Nicotine", "Water")
+)
+# Use axis to draw in the "Female" and "Male" labels
+# at the appropriate place. Line = 1.5 moves the axis down
+# and lwd = 0 means the axis line is not drawn.
+axis(
+side = 1,
+at = c(1.5, 3.5),
+line = 1.5,
+labels = c("Female", "Male"),
+lwd = 0
+)
+# Load the gplots package so we can use
+# the plotmeans() function
+library(gplots)
+# Plot means and 95% CIs. Note no x-axis or x-axis label is
+# plotted, no lines connecting the means (connect = FALSE), no
+# sample size indicators (n.label = FALSE)
+# and we are drawing the means and CIs larger and thicker
+# than the defaults (cex = 2.5, barwidth = 2).
+plotmeans(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+n.label = FALSE,
+pch = 18,
+cex = 2.5,
+col = "darkblue",
+barcol = "darkblue",
+barwidth = 2,
+connect = FALSE,
+xlab = "",
+xaxt = "n",
+ylim = c(0, 24000)
+)
+# Use points function to draw in the data.
+# The extra 88 at the end of the hex code for
+# the colour makes the points semitransparent
+points(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+pch = 16,
+col = "#00999977",
+cex = 1.2
+)
+# Draw in the axis, the axis ticks and the top line of
+# the tick labels
+axis(
+side = 1,
+at = 1:4,
+labels = c("Nicotine", "Water", "Nicotine", "Water")
+)
+# Use axis to draw in the "Female" and "Male" labels
+# at the appropriate place. Line = 1.5 moves the axis down
+# and lwd = 0 means the axis line is not drawn.
+axis(
+side = 1,
+at = c(1.5, 3.5),
+line = 1.5,
+labels = c("Female", "Male"),
+lwd = 0
+)
+# Load the gplots package so we can use
+# the plotmeans() function
+library(gplots)
+# Plot means and 95% CIs. Note no x-axis or x-axis label is
+# plotted, no lines connecting the means (connect = FALSE), no
+# sample size indicators (n.label = FALSE)
+# and we are drawing the means and CIs larger and thicker
+# than the defaults (cex = 2.5, barwidth = 2).
+plotmeans(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+n.label = FALSE,
+pch = 18,
+cex = 2.5,
+col = "darkblue",
+barcol = "darkblue",
+barwidth = 2,
+connect = FALSE,
+xlab = "",
+xaxt = "n",
+ylim = c(0, 24000)
+)
+# Use points function to draw in the data.
+# The extra 88 at the end of the hex code for
+# the colour makes the points semitransparent
+points(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+pch = 16,
+col = "#00999966",
+cex = 1.2
+)
+# Draw in the axis, the axis ticks and the top line of
+# the tick labels
+axis(
+side = 1,
+at = 1:4,
+labels = c("Nicotine", "Water", "Nicotine", "Water")
+)
+# Use axis to draw in the "Female" and "Male" labels
+# at the appropriate place. Line = 1.5 moves the axis down
+# and lwd = 0 means the axis line is not drawn.
+axis(
+side = 1,
+at = c(1.5, 3.5),
+line = 1.5,
+labels = c("Female", "Male"),
+lwd = 0
+)
+# Load the gplots package so we can use
+# the plotmeans() function
+library(gplots)
+# Plot means and 95% CIs. Note no x-axis or x-axis label is
+# plotted, no lines connecting the means (connect = FALSE), no
+# sample size indicators (n.label = FALSE)
+# and we are drawing the means and CIs larger and thicker
+# than the defaults (cex = 2.5, barwidth = 2).
+plotmeans(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+n.label = FALSE,
+pch = 18,
+cex = 2.5,
+col = "darkblue",
+barcol = "darkblue",
+barwidth = 2,
+connect = FALSE,
+xlab = "",
+xaxt = "n",
+ylim = c(0, 24000)
+)
+# Use points function to draw in the data.
+# The extra 88 at the end of the hex code for
+# the colour makes the points semitransparent
+points(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+pch = 16,
+col = "#00666666",
+cex = 1.2
+)
+# Draw in the axis, the axis ticks and the top line of
+# the tick labels
+axis(
+side = 1,
+at = 1:4,
+labels = c("Nicotine", "Water", "Nicotine", "Water")
+)
+# Use axis to draw in the "Female" and "Male" labels
+# at the appropriate place. Line = 1.5 moves the axis down
+# and lwd = 0 means the axis line is not drawn.
+axis(
+side = 1,
+at = c(1.5, 3.5),
+line = 1.5,
+labels = c("Female", "Male"),
+lwd = 0
+)
+# Load the gplots package so we can use
+# the plotmeans() function
+library(gplots)
+# Plot means and 95% CIs. Note no x-axis or x-axis label is
+# plotted, no lines connecting the means (connect = FALSE), no
+# sample size indicators (n.label = FALSE)
+# and we are drawing the means and CIs larger and thicker
+# than the defaults (cex = 2.5, barwidth = 2).
+plotmeans(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+n.label = FALSE,
+pch = 18,
+cex = 2.5,
+col = "darkblue",
+barcol = "darkblue",
+barwidth = 2,
+connect = FALSE,
+xlab = "",
+xaxt = "n",
+ylim = c(0, 24000)
+)
+# Use points function to draw in the data.
+# The extra 88 at the end of the hex code for
+# the colour makes the points semitransparent
+points(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+pch = 16,
+col = "#00777766",
+cex = 1.2
+)
+# Draw in the axis, the axis ticks and the top line of
+# the tick labels
+axis(
+side = 1,
+at = 1:4,
+labels = c("Nicotine", "Water", "Nicotine", "Water")
+)
+# Use axis to draw in the "Female" and "Male" labels
+# at the appropriate place. Line = 1.5 moves the axis down
+# and lwd = 0 means the axis line is not drawn.
+axis(
+side = 1,
+at = c(1.5, 3.5),
+line = 1.5,
+labels = c("Female", "Male"),
+lwd = 0
+)
+# Load the gplots package so we can use
+# the plotmeans() function
+library(gplots)
+# Plot means and 95% CIs. Note no x-axis or x-axis label is
+# plotted, no lines connecting the means (connect = FALSE), no
+# sample size indicators (n.label = FALSE)
+# and we are drawing the means and CIs larger and thicker
+# than the defaults (cex = 2.5, barwidth = 2).
+plotmeans(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+n.label = FALSE,
+pch = 18,
+cex = 2.5,
+col = "darkblue",
+barcol = "darkblue",
+barwidth = 2,
+connect = FALSE,
+xlab = "",
+xaxt = "n",
+ylim = c(0, 24000)
+)
+# Use points function to draw in the data.
+# The extra 88 at the end of the hex code for
+# the colour makes the points semitransparent
+points(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+pch = 16,
+col = "#00777788",
+cex = 1.2
+)
+# Draw in the axis, the axis ticks and the top line of
+# the tick labels
+axis(
+side = 1,
+at = 1:4,
+labels = c("Nicotine", "Water", "Nicotine", "Water")
+)
+# Use axis to draw in the "Female" and "Male" labels
+# at the appropriate place. Line = 1.5 moves the axis down
+# and lwd = 0 means the axis line is not drawn.
+axis(
+side = 1,
+at = c(1.5, 3.5),
+line = 1.5,
+labels = c("Female", "Male"),
+lwd = 0
+)
+# Load the gplots package so we can use
+# the plotmeans() function
+library(gplots)
+# Plot means and 95% CIs. Note no x-axis or x-axis label is
+# plotted, no lines connecting the means (connect = FALSE), no
+# sample size indicators (n.label = FALSE)
+# and we are drawing the means and CIs larger and thicker
+# than the defaults (cex = 2.5, barwidth = 2).
+plotmeans(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+n.label = FALSE,
+pch = 18,
+cex = 2.5,
+col = "darkblue",
+barcol = "darkblue",
+barwidth = 2,
+connect = FALSE,
+xlab = "",
+ylab = "SLA (triggers per 12 hours)"
+xaxt = "n",
+ylim = c(0, 24000)
+)
+# Use points function to draw in the data.
+# The extra 88 at the end of the hex code for
+# the colour makes the points semitransparent
+points(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+pch = 16,
+col = "#00777788",
+cex = 1.2
+)
+# Draw in the axis, the axis ticks and the top line of
+# the tick labels
+axis(
+side = 1,
+at = 1:4,
+labels = c("Nicotine", "Water", "Nicotine", "Water")
+)
+# Use axis to draw in the "Female" and "Male" labels
+# at the appropriate place. Line = 1.5 moves the axis down
+# and lwd = 0 means the axis line is not drawn.
+axis(
+side = 1,
+at = c(1.5, 3.5),
+line = 1.5,
+labels = c("Female", "Male"),
+lwd = 0
+)
+# Load the gplots package so we can use
+# the plotmeans() function
+library(gplots)
+# Plot means and 95% CIs. Note no x-axis or x-axis label is
+# plotted, no lines connecting the means (connect = FALSE), no
+# sample size indicators (n.label = FALSE)
+# and we are drawing the means and CIs larger and thicker
+# than the defaults (cex = 2.5, barwidth = 2).
+plotmeans(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+n.label = FALSE,
+pch = 18,
+cex = 2.5,
+col = "darkblue",
+barcol = "darkblue",
+barwidth = 2,
+connect = FALSE,
+xlab = "",
+ylab = "SLA (triggers per 12 hours)",
+xaxt = "n",
+ylim = c(0, 24000)
+)
+# Use points function to draw in the data.
+# The extra 88 at the end of the hex code for
+# the colour makes the points semitransparent
+points(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+pch = 16,
+col = "#00777788",
+cex = 1.2
+)
+# Draw in the axis, the axis ticks and the top line of
+# the tick labels
+axis(
+side = 1,
+at = 1:4,
+labels = c("Nicotine", "Water", "Nicotine", "Water")
+)
+# Use axis to draw in the "Female" and "Male" labels
+# at the appropriate place. Line = 1.5 moves the axis down
+# and lwd = 0 means the axis line is not drawn.
+axis(
+side = 1,
+at = c(1.5, 3.5),
+line = 1.5,
+labels = c("Female", "Male"),
+lwd = 0
+)
+# Load the gplots package so we can use
+# the plotmeans() function
+library(gplots)
+# Plot means and 95% CIs. Note no x-axis or x-axis label is
+# plotted, no lines connecting the means (connect = FALSE), no
+# sample size indicators (n.label = FALSE)
+# and we are drawing the means and CIs larger and thicker
+# than the defaults (cex = 2.5, barwidth = 2).
+plotmeans(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+n.label = FALSE,
+pch = 18,
+cex = 2.5,
+col = "darkblue",
+barcol = "darkblue",
+barwidth = 2,
+connect = FALSE,
+xlab = "",
+ylab = "SLA (triggers per 12 hours)",
+xaxt = "n",
+ylim = c(0, 24000)
+)
+# Use points function to draw in the data.
+# The extra 88 at the end of the hex code for
+# the colour makes the points semitransparent
+points(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+pch = 16,
+col = "#00772288",
+cex = 1.2
+)
+# Draw in the axis, the axis ticks and the top line of
+# the tick labels
+axis(
+side = 1,
+at = 1:4,
+labels = c("Nicotine", "Water", "Nicotine", "Water")
+)
+# Use axis to draw in the "Female" and "Male" labels
+# at the appropriate place. Line = 1.5 moves the axis down
+# and lwd = 0 means the axis line is not drawn.
+axis(
+side = 1,
+at = c(1.5, 3.5),
+line = 1.5,
+labels = c("Female", "Male"),
+lwd = 0
+)
+# Load the gplots package so we can use
+# the plotmeans() function
+library(gplots)
+# Plot means and 95% CIs. Note no x-axis or x-axis label is
+# plotted, no lines connecting the means (connect = FALSE), no
+# sample size indicators (n.label = FALSE)
+# and we are drawing the means and CIs larger and thicker
+# than the defaults (cex = 2.5, barwidth = 2).
+plotmeans(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+n.label = FALSE,
+pch = 18,
+cex = 2.5,
+col = "darkblue",
+barcol = "darkblue",
+barwidth = 2,
+connect = FALSE,
+xlab = "",
+ylab = "SLA (triggers per 12 hours)",
+xaxt = "n",
+ylim = c(0, 24000)
+)
+# Use points function to draw in the data.
+# The extra 88 at the end of the hex code for
+# the colour makes the points semitransparent
+points(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+pch = 16,
+col = "#00229988",
+cex = 1.2
+)
+# Draw in the axis, the axis ticks and the top line of
+# the tick labels
+axis(
+side = 1,
+at = 1:4,
+labels = c("Nicotine", "Water", "Nicotine", "Water")
+)
+# Use axis to draw in the "Female" and "Male" labels
+# at the appropriate place. Line = 1.5 moves the axis down
+# and lwd = 0 means the axis line is not drawn.
+axis(
+side = 1,
+at = c(1.5, 3.5),
+line = 1.5,
+labels = c("Female", "Male"),
+lwd = 0
+)
+# Load the gplots package so we can use
+# the plotmeans() function
+library(gplots)
+# Plot means and 95% CIs. Note no x-axis or x-axis label is
+# plotted, no lines connecting the means (connect = FALSE), no
+# sample size indicators (n.label = FALSE)
+# and we are drawing the means and CIs larger and thicker
+# than the defaults (cex = 2.5, barwidth = 2).
+plotmeans(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+n.label = FALSE,
+pch = 18,
+cex = 2.5,
+col = "darkblue",
+barcol = "darkblue",
+barwidth = 2,
+connect = FALSE,
+xlab = "",
+ylab = "SLA (triggers per 12 hours)",
+xaxt = "n",
+ylim = c(0, 24000)
+)
+# Use points function to draw in the data.
+# The extra 88 at the end of the hex code for
+# the colour makes the points semitransparent
+points(
+SLA ~ interaction(Treatment:Sex),
+data = mouse_movement,
+pch = 16,
+col = "#00777788",
+cex = 1.2
+)
+# Draw in the axis, the axis ticks and the top line of
+# the tick labels
+axis(
+side = 1,
+at = 1:4,
+labels = c("Nicotine", "Water", "Nicotine", "Water")
+)
+# Use axis to draw in the "Female" and "Male" labels
+# at the appropriate place. Line = 1.5 moves the axis down
+# and lwd = 0 means the axis line is not drawn.
+axis(
+side = 1,
+at = c(1.5, 3.5),
+line = 1.5,
+labels = c("Female", "Male"),
+lwd = 0
+)
+with(mouse_movement, interaction.plot(Treatment, Sex, SLA))

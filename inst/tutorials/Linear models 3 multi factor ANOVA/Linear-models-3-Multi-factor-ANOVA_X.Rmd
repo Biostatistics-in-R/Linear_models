@@ -22,6 +22,11 @@ mouse_movement <-
     "https://github.com/rjknell/Linear_models/raw/master/data/McCarthy_mice_activity.csv",
     stringsAsFactors = TRUE
   )
+
+bacteria <-
+  read.csv(
+    "https://github.com/rjknell/Linear_models/raw/master/data/Robinson_zebra_fish_bacteria.csv",
+  )
 ```
 
 ## Adding extra variables to a linear model
@@ -325,9 +330,362 @@ axis(
 
 ## Exercise: multi-factor ANOVA 
 
-Here, we will use some data from a study on bacterial adaptation to host gut environments originally published in 2018 by a group of researchers at The UNiversity of Eugene, Oregon and the Canadian Institute for Advanced Research~2~. They looked, among other things, at the competitive ability a bacterium called *Aeromonas veronii* after either 4 or 18 passages through the gut of an otherwise germ-free larval zebrafish. Competitive ability was measured *in vivo* by incoulating a larval zebrafish with a dose of both the experimental line of bacteria and an ancestral ine which was tagged with Green Flourescent Protein for 3 days, following which the gut contents were homogenised and the homogenate plated onto tryptone soy agar. After a suitable incubation period the colonies of each strain were counted using a flourescence microscope to distinguish them and a "competitive index" calclated as the ratio of the number of colonies for the adapted line to the colonies from the ancestral line.
+Here, we will use some data from a study on bacterial adaptation to host gut environments originally published in 2018 by a group of researchers at The University of Eugene, Oregon and the Canadian Institute for Advanced Research^2^. They looked, among other things, at the competitive ability a bacterium called *Aeromonas veronii* after either 4 or 18 passages through the gut of an otherwise germ-free larval zebrafish. Competitive ability was measured *in vivo* by incoulating a larval zebrafish with a dose of both the experimental line of bacteria and an ancestral ine which was tagged with Green Flourescent Protein for 3 days, following which the gut contents were homogenised and the homogenate plated onto tryptone soy agar. After a suitable incubation period the colonies of each strain were counted using a flourescence microscope to distinguish them and a "competitive index" calculated as the ratio of the number of colonies for the adapted line to the colonies from the ancestral line.
 
-The particular experiment which we will look at here is one in which the experimenters compared the competitive ability of bacteria in the host strain which they had been evolving (WT hosts) with the competitive ability of the same bacteria but competing in hosts of a different genetic background ()  compared the competitive abilities of bacteria which had had a short period of adaptation (4 passages) with bacteria which had a longer period (18 passages), 
+The particular experiment which we will look at here is one in which the experimenters compared the competitive ability of bacteria in the host strain which they had been evolving (WT hosts) with the competitive ability of the same bacteria but competing in hosts of a different genetic background (an immunodeficient *myd88~-~* mutant). They also compared the competitive abilities of bacteria which had had a short period of adaptation (4 passages) with bacteria which had a longer period (18 passages). The data are on github at this URL:
+
+https://github.com/rjknell/Linear_models/raw/master/data/Robinson_zebra_fish_bacteria.csv
+
+Start by loading the data into R (I suggest you save the imported dataset as `bacteria`) and checking the dataset structure using `str`
+
+
+```{r load_bacteria, exercise = TRUE}
+
+
+```
+
+```{r load_bacteria-hint-1}
+# Here's a code framework to help you
+
+object_name <- read.csv("file_location")
+
+str(object_name)
+```
+
+
+```{r load_bacteria-hint-2}
+# This is the solution
+
+bacteria <- read.csv(
+  "https://github.com/rjknell/Linear_models/raw/master/data/Robinson_zebra_fish_bacteria.csv")
+
+str(bacteria)
+```
+
+
+The response variable is `CI` (Competitive Index) and we have three other variables: `Line`, `Host` and `Passage`. `Line` is a number from 1 to 3 and refers to the fact that the experimenters actually repreated the experiment three times with three independently evolved lines of bacteria. For the present we'll not worry about `Line` but we will include it in a later analysis.
+
+None of our explanatory vectors are currently factors but we need both `Host` and `Passage` to be specified as such. You can do this using the `as.factor()` function. I've done one, you'll need to do the other. Once you've done that check the data frame again using `str()`.
+
+```{r make_factors, exercise = TRUE}
+bacteria$Host <- as.factor(bacteria$Host)
+
+```
+
+```{r make_factors-hint-1}
+# This is the solution
+
+bacteria$Host <- as.factor(bacteria$Host)
+bacteria$Passage <- as.factor(bacteria$Passage)
+
+str(bacteria)
+```
+
+All looks good so far. There are two factors to include in our analysis for the moment. `Host` has two treatments, `WT` and `myd88` and `Passage` also has two treatments, `4` and `18`. Before we jump in and fit a model, though, we should have a look at our data. See if you can draw a boxplot of `CI` as explained by `Host` and `Passage`.
+
+```{r bacteria_boxplot, exercise = TRUE}
+
+```
+
+```{r bacteria_boxplot-hint-1}
+# You can use the boxplot() function and put in
+# the variable names in a formula as you would 
+# for a linear model. You need to specify the dataframe
+# using the data = argument
+```
+
+```{r bacteria_boxplot-hint-2}
+# Don't forget to put some sensible axis
+# labels in.
+# Make sure there are commas between each argument
+```
+
+```{r bacteria_boxplot-hint-3}
+# Here's a code framework which might help
+
+boxplot(response ~ explanatory1 * explanatory2,
+        data = dataframe,
+        ylab = "",
+        xlab = "")
+```
+
+```{r bacteria_boxplot-hint-4}
+# Here's a solution
+
+boxplot(CI ~ Passage * Host,
+        data = bacteria,
+        ylab = "Competitive index",
+        xlab = "Treatment combination")
+```
+
+What do you see?
+
+```{r boxplot-quiz, echo=FALSE}
+  question(
+    "What can we say about the shape of the data distributions?",
+    answer("There is extreme positive skew", correct = TRUE),
+    answer("It is not clear but there is some indication of negative skew"),
+    answer("It's not possible to say because the sample size is too small"),
+    answer(
+      "The boxplots are roughly symmetrical indicating no major problems with the data distribution",
+    )
+)
+```
+
+<details><summary>**Click here for more**</summary>
+
+As you have hopefully seen, these data look like they are very positively skewed. Almost all of the data have values between zero and about 1000, but there are also some datapoints with much higher values. Given that the linear model assumes normality in the errors, or the residuals, rather than in the raw data we should be cautious about worrying about apparent violations in the raw data. In this case however, it's clear that if we were to fit a model to these data our residuals would be exceedingly skewed and also we can imagine that those extreme values would have some disproportionate effects on our fitted model. In this case we can use a data transformation to try to fix this extreme skew, with the two easy options being a square root transformation and a log transformation. Just checking:
+
+```{r}
+summary(bacteria$CI)
+```
+
+There aren't any zeros in the data so we can use a log transformation without having to add a constant to the dataset. Let's compare what we see with the two different transformations: see if you can modify this code to plot one boxplot of square root transformed data and then another one with log transformed data.
+
+```{r transformations, exercise = TRUE}
+
+boxplot(CI ~ Passage * Host,
+        data = bacteria,
+        ylab = "Competitive index",
+        xlab = "Treatment combination")
+
+boxplot(CI ~ Passage * Host,
+        data = bacteria,
+        ylab = "Competitive index",
+        xlab = "Treatment combination")
+```
+
+```{r transformations-hint-1}
+# The function for a square root transformation is sqrt()
+# The function for a log transformation is log()
+```
+
+```{r transformations-hint-2}
+# This is the solution
+boxplot(sqrt(CI) ~ Passage * Host,
+        data = bacteria,
+        ylab = "Square root of competitive index",
+        xlab = "Treatment combination")
+
+boxplot(log(CI) ~ Passage * Host,
+        data = bacteria,
+        ylab = "Log competitive index",
+        xlab = "Treatment combination")
+```
+
+This is a nice illustration of the effect of the two different transformations. You can see that the square root transformation is not sufficient to get rid of the skew in these data, but the log transformation gives us some nicely symmetrical boxplots. We'll do our analysis on log transformed data.
+</details>
+<br><br><hr>
 
 2. Robinson, C.D., Klein, H.S., Murphy, K.D., Parthasarathy, R., Guillemin, K. & Bohannan, B.J.M. (2018) Experimental bacterial adaptation to the zebrafish gut reveals a primary role for immigration. PLoS biology, 16, e2006893.
 
+## Fitting the model and diagnostics
+
+To start with we will ignore the `Line` variable so we have two explanatory factors and we'd like to fit both of these plus their interaction. Save the fitted model object as `M1`, and then check the significance of the interaction term by bringing up an ANOVA table using `anova()`. We won't worry about type I versus type III sums of squares for the moment since we're really only concerned with the significance of the interaction term. Don't forget to log the response variable and tell `lm()` that you're using data from `bacteria`. As a consequence of some weirdness that happens with the learnr package, please enclose your `anova()` function call in a `print()` function to keep the ANOVA table formatting consistent. Sorry about this.
+
+```{r model_fit_1, exercise = TRUE}
+
+
+```
+
+```{r model_fit_1-hint-1}
+# Use lm() to fit the model with a formula which
+# is the same as you used for the boxplots, and 
+# remember to specify what the dataframe is with data =
+
+# for the print() stuff it's just
+print(anova(M1))
+```
+
+```{r model_fit_1-hint-2}
+# Here is the solution
+M1 <- lm(log(CI) ~ Passage * Host,
+    data = bacteria)
+
+print(anova(M1))
+```
+
+YOu can see from this that we have a highly significant interaction between `Host` and `Passage` --- what this means is that the effect of `Passage` depends on whether the level of `Host` is `WT` or `myd88`, or alternatively, the effect of `Host` depends on whether `Passage` is `4` or `18`. Before we look into this further we should check the diagnostics for our model. Remember that you can bring up just the first two diagnostic plots with `which = 1:2`.
+
+```{r prepare-M1, echo = FALSE}
+M1 <- lm(log(CI) ~ Passage * Host,
+    data = bacteria)
+```
+
+```{r bacteria_model1_diagnostics, exercise = TRUE, exercise.setup = "prepare-M1"}
+
+```
+
+```{r bacteria_model1_diagnostics-hint-1}
+# Just use the plot() function on your model object
+# and specify which = 1:2 as a second argument
+```
+
+```{r bacteria_model1_diagnostics-hint-2}
+# This is the solution
+plot(M1, which = 1:2)
+```
+
+What do the diagnostic plots tell us? More than one answer can be correct.
+
+```{r diagnostics-quiz, echo=FALSE}
+  question(
+    "Which of the following is correct?",
+    answer("Data points 44, 95 and 115 are ideintified as outliers and should be removed", message = "Answer 1. R will always identify the three residuals with the largest absolute values. That doesn't mean they are problematic and in this case there's no reason to be concerned.     "),
+    answer("Because the points in the qq plot are all close to the line of unity we have a residual distribution which is very close to a normal distribution", correct = TRUE),
+    answer("The systematic deviation from the line in the qq plot could be because the data are not independent", message = "Answer 3. The qq plot can't tell you anything about the independence of your data points, it only gives you information on how similar your residuals are to a normal distribution      "),
+    answer("The plot of residuals versus fitted values indicates potentially important problems with heteroskedasticity", message = "Answer 4. The amount of dispersion in the residuals is roughly the same across the plot, indicating that there's no substantial change in the variance as the fitted values change      "),
+    answer("The plot of residuals versus fitted values indicates potentially important problems with non-independence of data as shown by the data being divided into four groups", message = "Answer 5. The data are divided into four groups because the model is estimating four means      "),
+    answer("The diagnostic plots are exemplary and give no reason for concern", correct = TRUE) 
+)
+```
+
+## Interpreting the fitted model with two factors
+
+We have a fitted model with a highly significant interaction term and we're happy that the diagnostic plots aren't showing us anything that gives any cause for concern. Next question: what does this mean?
+
+The next thing we should do is bring up the summary for the model. Have a look and see if you can answer the questions. Remember that higher numbers for the competitiveness index mean that the experimentally evolved strain is more competitive.
+
+```{r summary_M1, exercise=TRUE, exercise.setup = "prepare-M1"}
+
+```
+
+```{r summary_M1-hint-1}
+# You just need to use the summary function
+# on the fitted model object
+```
+
+```{r summary_M1-hint-2}
+# This is the solution
+summary(M1)
+```
+
+
+```{r summary_quiz1, echo = FALSE}
+quiz(
+caption = "Model summary quiz",
+question("The line labelled (Intercept) gives the estimated mean value for what?",
+       answer("WT Host and 4 Passages"),
+       answer("WT Host and 18 Passages"),
+       answer("myd88 host and 4 Passages", correct = TRUE),
+       answer("myd99 hist and 18 Passages")
+),
+
+question("What is the estimated mean for myd88 Host and 18 Passages?",
+         answer("3.4415"),
+         answer("3.4415 + 0.4381", correct = TRUE),
+         answer("3.4415 - 1.8047"),
+         answer("3.4415 - 1.8047 + 2.9578")
+),
+
+question("Considering _only the myd88 treatments_, which statement is true?",
+         answer("Bacteria passaged for 18 generations are signficantly more cometitive than those passaged for 4"),
+         answer("Bacteria passaged for 18 generations are significantly less competitive than those passaged for 4"),
+         answer("The competiveness of bacteria passaged for 18 generations is signficantly similar to that of bacteria passaged for 4 generations"),
+         answer("Bacteria passaged for 18 generations are slightly more competitive than those passaged for 4, but we have little confidence that this pattern has arisen by anything other than random chance", correct = TRUE)
+)
+)
+```
+
+
+<details><summary>**Click here for more**></summary>
+<br>
+For the bacteria competed in the myd88- hosts the summary table tells us that there is little effect of the number of passages the bacteria went through in their experimental evolution: the estimated mean for 4 passages is similar to that for 18 and the marginal p-value for the row of the coefficients table in question is considerably greater than 0.05. So far all is fine, now what about the bacteria competing in the wild type (WT) hosts? This is where the interaction term shows itself.
+
+Here's that coefficients table again:
+
+```
+Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)        3.4415     0.2957  11.637  < 2e-16 ***
+Passage18          0.4381     0.4030   1.087    0.278    
+HostWT            -1.8047     0.4182  -4.315 2.49e-05 ***
+Passage18:HostWT   2.9578     0.5700   5.190 5.08e-07 ***
+```
+The `(Intercept)` is the estimated mean for myd88^-^ hosts and 4 passages.
+
+The `Passage18` row gives the estimated change in the mean log CI associated with changing the bacteria from those that had 4 passages to those that had 18. If there were no interaction, as in the example that was worked through earlier in the tutorial, this would apply to all levels of the other factor. Because there is an interaction this applies to the myd88^-^ treatments but things get a bit more complicated with the WT treatments.
+
+The `HostWT` row is the effect of changing `Host` to WT from myd88^-^, when the bacteria have been through 4 passages. You can see that this is a negative effect and that it is associated with a very small marginal p-value, meaning that we're reasonably confident that this isn't just something that arose through smapling error. The estimated mean log CI for WT hosts and 4 passages is therefore 3.4415 - 1.8047 =  1.6368.
+
+Now, what about the mean for WT hosts and bacteria which have had 18 passages? If there were no interaction term this would be 3.4415 (intercept) + 0.4381 (effect of passage number) - 1.8047 (effect of host). It's not though, because we have an interaction term, so the effect of passage number depends on the host. The last row of the coefficients table, `Passage18:HostWT` gives us the effect of this interaction which is 2.9578. This is the difference in the effect of passage number when the host is WT as opposed to an myd88^-^ host: so the estimated mean for WT hosts and bacteria that have had 18 passages is (wait for it)
+
+3.4415 (intercept) + 0.4381 (effect of passage number in myd88^-^ hosts) - 1.8047 (effect of host) + 2.9578 (difference in the effect of passage number depending on the host) = 5.0327.
+
+We can check this against the actual mean:
+
+```{r}
+with(bacteria, mean(log(CI[Passage == "18" & Host == "WT"])))
+```
+
+
+
+
+
+```{r}
+library(gplots)
+
+# Plot means and 95% CIs. Note no x-axis (xaxt = "n") or x-axis label  
+# (xlab = "") plotted, no lines connecting the means (connect = FALSE), 
+# no sample size indicators (n.label = FALSE)
+# and we are drawing the means and CIs larger and thicker
+# than the defaults (cex = 2.5, barwidth = 2). 
+plotmeans(
+  log(CI) ~ interaction(Host:Passage),
+  data = bacteria,
+  n.label = FALSE,
+  pch = 18,
+  cex = 2.5,
+  col = "darkblue",
+  barcol = "darkblue",
+  barwidth = 2,
+  connect = FALSE,
+  xlab = "",
+  ylab = "Log Competitive Index",
+  xaxt = "n",
+  ylim = c(-3, 10)
+)
+
+# Use points function to draw in the data.
+# The extra 88 at the end of the hex code for
+# the colour makes the points semitransparent
+
+# This horror show of nested parentheses:
+# jitter(as.numeric(interaction(Treatment:Sex)), 0.6),
+# uses the interaction() function to generate a factor
+# with all the combinations of levels from the interaction
+# of sex and treatment, then converts it to numerical
+# values, then adds some noise with the jitter() function
+# in order to reduce the amount of overplotting for the 
+# individual data points in the final graph
+
+
+
+points(
+  log(CI) ~ jitter(as.numeric(interaction(Host:Passage)), 0.6),
+  data = bacteria,
+  pch = 16,
+  col = "#00777755",
+  cex = 1.2
+)
+
+
+# Draw in the axis, the axis ticks and the top line of
+# the tick labels
+axis(
+  side = 1,
+  at = 1:4,
+  labels = c("4 Passages", "18 Passages", "4 Passages", "18 Passages")
+)
+
+# Use axis to draw in the "Female" and "Male" labels
+# at the appropriate place. Line = 1.5 moves the axis down
+# and lwd = 0 means the axis line is not drawn.
+axis(
+  side = 1,
+  at = c(1.5, 3.5),
+  line = 1.5,
+  labels = c(expression('myd88' \u207B ), "Wild Type"),
+  lwd = 0
+)
+```
