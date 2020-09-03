@@ -34,7 +34,7 @@ bacteria1 <- subset(bacteria, Line ==1)
 
 ## Adding extra variables to a linear model
 
-So far we've seen how the linear model can cope with both factors and continuous variables as explanatory variables, and that the way that variance is partitioned for both types of epxlanatory variable is fundamentally the same. Linear models can also cope with more than one explanatory variable, so you can analyse the effect of several different things that might influence your variable of interest at the same time. This has some important benefits over analysing each explanatory variable's effect separately:
+So far we've seen how the linear model can cope with both factors and continuous variables as explanatory variables, and that the way that variance is partitioned for both types of explanatory variable is fundamentally the same. Linear models can also cope with more than one explanatory variable, so you can analyse the effect of several different things that might influence your variable of interest at the same time. This has some important benefits over analysing each explanatory variable's effect separately:
 
 * Fitting a single model reduces the number of statistical tests which we need to do, reducing the probability of type 1 errors.
 
