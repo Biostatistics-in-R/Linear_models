@@ -95,7 +95,9 @@ cat("SSError = ",SSError)
 
 Compare these to the ANOVA table above and you can see that they match the entries in the Sum Sq column. The Mean square values are just the Sums of Squares divided by the degrees of freedom and the F statistic is the Mean square treatment (labelled as `abs(Latitude)` here) divided by the Mean Square error (labelled `Residuals` here).
 
-In practice we don't need to calculate our sums of squares separately, nor do we even need to use `anova()` to get an ANOVA table for our linear regression. If we use `summary()` on our fitted model object we can get all the information we need.
+In practice we don't need to calculate our sums of squares separately, nor do we even need to use `anova()` to get an ANOVA table for our linear regression. If we use `summary()` on our fitted model object we can get all the information we need. The first five minutes of this video explains how to extract the model coefficients from the summary table for a linear regression. The rest of the video deals with more complex models that we won't concern ourselves with here.
+
+![](https://youtu.be/aCOgHUSd-SI)
 
 ```{r}
 summary(L1)

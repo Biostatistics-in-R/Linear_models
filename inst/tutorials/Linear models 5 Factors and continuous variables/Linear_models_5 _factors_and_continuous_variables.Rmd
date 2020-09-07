@@ -1,0 +1,26 @@
+---
+title: "Linear models 5: Factors and continuous variables"
+output: 
+  learnr::tutorial:
+    progressive: false
+    theme: cerulean
+    highlight: textmate
+    css: css/test.css
+    code_folding: hide
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+  Linear models with both factors and continuous variables as explaantory variables: how to fit models, check diagnostics and interpret the output.
+---
+
+
+
+```{r setup, include=FALSE}
+library(learnr)
+library(gplots)
+library(ggplot2)
+knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, fig.width = 5, fig.height = 5)
+
+```
+
+
