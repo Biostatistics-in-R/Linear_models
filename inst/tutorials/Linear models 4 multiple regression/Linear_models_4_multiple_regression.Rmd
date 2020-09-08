@@ -189,7 +189,7 @@ Have a think about the diagnostic plots and try to answer the questions.
     answer("The qq-plot shows that there is some positive skew in the residuals", correct = TRUE),
     answer(
       "The qq-plot shows that the relationship between at least onf of the explanatory variables and the response variable is non-linear", message = "Answer 4. The qq-plot can only tell you about the distribution of the residuals, not about whether the shape of the relationship between response and epxlanatory variables is linear",
-      answer("The presence of some residuals with high positive values which are not mirrored in the negative residuals indicates that there might be some positie skew in the residuals", correct = TRUE)
+      answer("The presence of some residuals with high positive values which are not mirrored in the negative residuals indicates that there might be some positive skew in the residuals", correct = TRUE)
     )
 )
 ```
