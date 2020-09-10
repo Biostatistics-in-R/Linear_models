@@ -19,6 +19,8 @@ description: >
 library(learnr)
 library(gplots)
 library(ggplot2)
+library(RColorBrewer)
+
 knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, fig.width = 5, fig.height = 5)
 
 pinniped <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Pinniped_brains.csv")
@@ -26,6 +28,10 @@ pinniped <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/P
 pinniped$Mate_type <- as.factor(pinniped$Mate_type)
 
 beetle <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Okada2019.csv")
+
+beetle$treatment <- as.factor(beetle$treatment)
+
+palette1 <- brewer.pal(n = 6, name = 'Dark2')
 ```
 
 ## Exercise 1: pinniped brains and mating systems
@@ -395,7 +401,7 @@ In many species of animal one sex (usually the male, but not always) carries wea
 
 Insulin-like peptides (ILPs) have been suggested to be important in the regulation of weaponry in insects, and Okada and co-workers identified five ILP genes in the *G. cornutus* genome. To test whether they were involved in weapon growth, they silenced these genes using RNA interference (RNAi) in final instar larvae, and then measured the mandible size and also a number of other measures of size in the adult males. RNAi coding for green flourescent protein (GFP) was used as a control.
 
-Here, we're going to model the relationship between RNAi treatment and mandible length. Because mandible length increases with body size, we'll also include elytron width in our model as a measure of body size. The data set is on github at https://github.com/rjknell/Linear_models/raw/master/data/Okada2019_G_cornutus.csv: read this into R as an object called `beetle` and check the import using `str()`.
+Here, we're going to model the relationship between RNAi treatment and mandible length. Because mandible length increases with body size, we'll also include elytron width in our model as a measure of body size. The data set is on github at https://github.com/rjknell/Linear_models/raw/master/data/Okada2019.csv: read this into R as an object called `beetle` and check the import using `str()`.
 
 ```{r beetle_import, exercise = TRUE}
 
@@ -407,8 +413,77 @@ beetle <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Oka
 str(beetle)
 ```
 
+There are three variables: `treatment` which is the RNAi treatment the beetle received, `EW` which is Elytra Width in µm and `ML` which is Mandible Length, also in µm. `ML` is our response variable and `EW` is a continuous explanatory variable. `treatment` has discrete values and we will be wanting to use this as a factor in our model. Before we do anything else, then, we need to ask R to make it into a factor using the `as.factor()` function. Check the conversion has gone correctly with the `summary()` function.
+
+```{r treatment_factor, exercise = TRUE}
+
+```
+
+```{r treatment_factor-hint-1}
+# Remember that you have to make treatment
+# into a factor and then allocate it to the
+# correct variable in the beetle data frame.
+# 
+# Then run summary() on beetle$treatment
+# 
+```
+
+```{r treatment_factor-hint-2}
+# This is the solution
+beetle$treatment <- as.factor(beetle$treatment)
+
+summary(beetle$treatment)
+```
+
+`GFP` refers to the beetles given RNAi for Green Flourescent Protein (a jellyfish protein) as a control, and `1ILP` to `5ILP` are the five insulin-like protein genes which were suppressed using RNAi in the final instar larvae. Let's draw a scatterplot to get an idea of what our data look like.
+
+Because we have lots of factor levels we'll use a custom colour palette from the RColorBrewer package which gives R users access to the colour palettes from [the color brewer website](https://colorbrewer2.org/). The package will be automatically installed if you are using a recent version of R, otherwise you might need to install it yourself using `install.packages("RColorBrewer")`. We can generate a palette with 6 colours like this:
+
+```{r}
+library(RColorBrewer)
+
+palette1 <- brewer.pal(n = 6, name = 'Dark2')
+```
+
+Now to draw our scatterplot. To 
+
+```{r beetle_scatterplot1, exercise = TRUE}
+
+plot(XXXXX ~ XXXXX,
+     data = XXXXX,
+     col = palette1[treatment],
+     pch = 16,
+     xlab = "XXXXX",
+     ylab = "XXXXX"
+     )
+
+legend("topleft", 
+       col = XXXXX,
+       pch  =XXXXX,
+       legend = XXXXX
+)
+```
+
+```{r beetle_scatterplot1-hint-1}
 
 
+```
+
+```{r beetle_scatterplot-hint-2}
+plot(EL ~ EW,
+     data = beetle,
+     col = palette1[treatment],
+     pch = 16,
+     xlab = "Elytron width (µm)",
+     ylab = "Mandible length (µm)"
+     )
+
+legend("topleft", 
+       col = palette1,
+       pch  =16,
+       legend = levels(beetle$treatment)
+)
+```
 
 <hr>
 2. Okada, Y., Katsuki, M., Okamoto, N., Fujioka, H. & Okada, K. (2019) A specific type of insulin-like peptide regulates the conditional growth of a beetle weapon. PLoS biology, 17, e3000541.
