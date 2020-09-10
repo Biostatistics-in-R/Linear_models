@@ -24,6 +24,8 @@ knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, fig.width = 5,
 pinniped <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Pinniped_brains.csv")
 
 pinniped$Mate_type <- as.factor(pinniped$Mate_type)
+
+beetle <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Okada2019.csv")
 ```
 
 ## Exercise 1: pinniped brains and mating systems
@@ -53,10 +55,12 @@ str(pinniped)
 
 We're interested here in the relationship between body mass and brain mass for males, and how it relates to the intensity of sexual selection each species experiences. The latter is indicated here by a variable called `Mate_type` which has two values. `mono` indicates species where the males are *monogynous*, pairing with a single female at a time, whereas `poly` indicates species with *polygynous* males which defend groups of females against rival males during the breeding season. Polygynous males are expected to experience stronger sexual selection during the breeding season.
 
-![](Cape_fur_seals.jpg)
-<img src = https://flic.kr/p/2ho4Ujs>
+<br>
+<img src = https://github.com/rjknell/Linear_models/raw/master/inst/tutorials/Linear%20models%205%20Factors%20and%20continuous%20variables/Cape_fur_seals.jpg width = "500">
 
 Two male pinnipeds (Cape Fur Seals *Arctocephalus pusillus*, actually a species of sealion) competing for territory in which to defend a group of females. Photo copyright Rob Knell 1999.
+
+<br>
 
 Before going any further we should do some exploratory analysis. In this case a scatterplot of `Male_brain_g` versus `Male_mass_Kg` would be appropriate, and you can colour-code it for `Mate_type` by firstly declaring `Mate_type` to be a factor and then specifying `col = Mate_type` as an argument in your `plot()` function call. Since we're just doing some exploratory analysis we won't worry about a legend --- because `poly` comes after `mono` in the alphabet the `poly` data will be coded red and the `mono` data black. Don't forget to label the axes appropriately.
 
@@ -254,4 +258,157 @@ question(
 ```
 
 <br>
-<details></summary>**Click here for more on the model interpretation**</summary>
+<details><summary>**Click here for more on the model interpretation**</summary>
+
+Hopefully you've been able to get a good idea of what the model is telling us but if not:
+
+* The model overall can be thought of a fitting two separate lines to the relationship between log male mass and log brain mass, one for monogynous males and one for polygynous males. 
+
+* The interaction term defines the difference in slopes between the two groups defined by th factor levels. Because the interaction term is statistically significant we can interpret this as telling us that there is a significant difference in slopes.
+
+We can visualise the data by plotting the data with the two lines. We'll use the `goodline()` function that was referred to in the video to keep the lines within the data they are fitted to. See if you can fill in the `XXXXX` sections in this code: we're going to use a nicer palette than the default, and add a legend.
+
+
+```{r eval = FALSE}
+goodline <- function(x, a, b, width = 1, colour = "black", type = 1){
+  x1 <- min(x)
+  x2 <- max(x)
+  y1 <- a+b*x1
+  y2 <- a+b*x2
+  lines(c(x1, x2),
+        c(y1, y2),
+        lwd = width,
+        col = colour,
+        lty = type)
+}
+```
+
+```{r goodline}
+goodline <- function(x, a, b, width = 1, colour = "black", type = 1){
+  x1 <- min(x)
+  x2 <- max(x)
+  y1 <- a+b*x1
+  y2 <- a+b*x2
+  lines(c(x1, x2),
+        c(y1, y2),
+        lwd = width,
+        col = colour,
+        lty = type)
+}
+```
+
+```{r pinniped_plot, exercise = TRUE, exercise.setup = "goodline", exercise.lines = 35}
+
+# Set custom palette
+palette1 <- c("chocolate1", "cadetblue4")
+
+# Plot data
+plot(
+  XXXXX ~ XXXXX,
+  data = XXXXX,
+  pch = 16,
+  col = palette1[Mate_type],
+  xlab = "Log Male Mass (Kg)",
+  ylab = "XXXXX"
+)
+
+# Line for monogynous males
+goodline(
+  x = log(pinniped$Male_mass_Kg[pinniped$Mate_type == "mono"]),
+  a = XXXXX,
+  b = 0.7544,
+  colour = palette1[1],
+  width = 2
+)
+
+# Line for polygynous males
+goodline(
+  x = log(pinniped$Male_mass_Kg[pinniped$Mate_type == "XXXXX"]),
+  a = 4.0052,
+  b = XXXXX,
+  colour = palette1[2],
+  width = 2
+)
+
+# Add legend
+legend("topleft",
+       fill = palette1,
+       legend = c("Monogynous", "Polygynous"))
+```
+
+```{r pinniped_plot-solution}
+
+# Set custom palette
+palette1 <- c("chocolate1", "cadetblue4")
+
+# Plot data
+plot(
+  log(Male_brain_g) ~ log(Male_mass_Kg),
+  data = pinniped,
+  pch = 16,
+  col = palette1[Mate_type],
+  xlab = "Log Male Mass (Kg)",
+  ylab = "Log Male Brain Mass (g)"
+)
+
+# Line for monogynous males
+goodline(
+  x = log(pinniped$Male_mass_Kg[pinniped$Mate_type == "mono"]),
+  a = 2.0779,
+  b = 0.7544,
+  colour = palette1[1],
+  width = 2
+)
+
+# Line for polygynous males
+goodline(
+  x = log(pinniped$Male_mass_Kg[pinniped$Mate_type == "poly"]),
+  a = 4.0052,
+  b = 0.3777,
+  colour = palette1[2],
+  width = 2
+)
+
+# Add legend
+legend("topleft",
+       fill = palette1,
+       legend = c("Monogynous", "Polygynous"))
+```
+
+
+### Final point: independence of data
+
+As we've discussed in earlier tutorials, independence of data is a fundamental assumption behind this sort of analysis and also something that you can't really check: rather you have to think a out it when designing your study. Are the data points in this study independent? No --- because some of the species are more cloesly related to some of the other species, and so these are likely to be more similar than we'd expect by chance even in the absence of any effect of mating system. As an example of this take a look at the species in this dataset with male body masses of less than 100Kg.
+
+```{r}
+
+pinniped[which(pinniped$Male_mass_Kg < 100),]
+```
+
+Six of these are from the genus *Phoca*, and all of these have monogynous males. What's more, these are all the species from the genus *Phoca* on the dataset. There's an obvious capacity here for apparent patterns in the dataset to be driven by evolutionary history rather than other factors. It could simply be the case that the common ancestor of the genus *Phoca* was small and monogynous, and that any apparent tendency for smaller males to be monogynous is a consequence of that rather than any evolutionary tendency towards small size in monogynous species. This is not something that we can correct for in this analysis here, but there are techniques for correcting for phylogenetic non-independence such as Phylogenetic Generalised Least Squares or PGLS. Yhis is what Fitzpatrick et al. used in their paper: I'm pleased to say that the fundamental conclusions were unchanged.
+
+</details>
+
+## Exercise 2: Insulin-like peptides and beetle weaponry
+
+In many species of animal one sex (usually the male, but not always) carries weapons such as horns, enlarged mandibles or similar which are used in contests with other animals from the same species. These weapons are often extremely variable in size between individuals, and an interesting question is why this should be and how the growth of these weapons is regulated. In 2019 a team of scientists based in Japan and the USA^2^ published the results of an in-depth study on the regulation of weapon size in a beetle called the broad-horned flour beetle, *Gnatocerus cornutus*. Males of this species have enlarged mandibles which they use in fights with other males to gain access to females. There is considerable variation in the length of these mandibles, much of which is known to be associated with the diet of the males during development. 
+
+Insulin-like peptides (ILPs) have been suggested to be important in the regulation of weaponry in insects, and Okada and co-workers identified five ILP genes in the *G. cornutus* genome. To test whether they were involved in weapon growth, they silenced these genes using RNA interference (RNAi) in final instar larvae, and then measured the mandible size and also a number of other measures of size in the adult males. RNAi coding for green flourescent protein (GFP) was used as a control.
+
+Here, we're going to model the relationship between RNAi treatment and mandible length. Because mandible length increases with body size, we'll also include elytron width in our model as a measure of body size. The data set is on github at https://github.com/rjknell/Linear_models/raw/master/data/Okada2019_G_cornutus.csv: read this into R as an object called `beetle` and check the import using `str()`.
+
+```{r beetle_import, exercise = TRUE}
+
+```
+
+```{r beetle_import-solution}
+beetle <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Okada2019.csv")
+
+str(beetle)
+```
+
+
+
+
+<hr>
+2. Okada, Y., Katsuki, M., Okamoto, N., Fujioka, H. & Okada, K. (2019) A specific type of insulin-like peptide regulates the conditional growth of a beetle weapon. PLoS biology, 17, e3000541.
