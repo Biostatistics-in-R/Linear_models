@@ -14,11 +14,9 @@ description: >
 ---
 
 
-
 ```{r setup, include=FALSE}
 library(learnr)
-library(gplots)
-library(ggplot2)
+
 library(RColorBrewer)
 
 knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, fig.width = 5, fig.height = 5)
@@ -34,9 +32,14 @@ beetle$treatment <- as.factor(beetle$treatment)
 palette1 <- brewer.pal(n = 6, name = 'Dark2')
 ```
 
+## Models combining factors and continuous explanatory variables
+
+You should now be starting to feel familiar with fitting linear models with multiple explanatory variables. Up to this point, however, we've focussed on either multiple factors (tutorial 3) or multiple continuous variables (tutorial 4). The next step, of course, is to fit models with both factors and continuous variables. People often find these difficult to interpret, but the trick is to remember that a model with a factor and a continuous explanatory variable is essentially fitting a series of lines, one for each factor level, with the slope being determined by the relationship between the continuous variable and the response variable. If there is no interaction then the lines will all share a common slope, with the differences in intercept being determined by the factor levels. An interaction term in a model with a factor and a continuous variable means that the lines are fitted with a different slope for each level of the factor. 
+
+
 ## Exercise 1: pinniped brains and mating systems
 
-You should now be starting to feel familiar with fitting linear models with multiple explanatory variables. Up to this point, however, we've focussed on either multiple factors (tutorial 3) or multiple continuous variables (tutorial 4). The next step, of course, is to fit models with both factors and continuous variables. Let's start with an fairly straightforward example. This comes from a study of brain size and mating type in pinnipeds (seals, sealions and walruses) published in 2012 by John Fitzpatrick and coauthors^1^. As part of a study of how mating system might impact on the evolution of brain and body size, Fitzpatrick *et al.* collected data on brain and body size and mating system for males and females from 33 species of pinniped. The data are available on github as a .csv file at https://github.com/rjknell/Linear_models/raw/master/data/Pinniped_brains.csv. Start by importing the data and saving it as an object called `pinnipeds`, and then checking the import with the `str()` function.
+ Let's start with an fairly straightforward example. This comes from a study of brain size and mating type in pinnipeds (seals, sealions and walruses) published in 2012 by John Fitzpatrick and coauthors^1^. As part of a study of how mating system might impact on the evolution of brain and body size, Fitzpatrick *et al.* collected data on brain and body size and mating system for males and females from 33 species of pinniped. The data are available on github as a .csv file at https://github.com/rjknell/Linear_models/raw/master/data/Pinniped_brains.csv. Start by importing the data and saving it as an object called `pinnipeds`, and then checking the import with the `str()` function.
 
 ```{r pinniped_import, exercise=TRUE}
 
@@ -64,7 +67,7 @@ We're interested here in the relationship between body mass and brain mass for m
 <br>
 <img src = https://github.com/rjknell/Linear_models/raw/master/inst/tutorials/Linear%20models%205%20Factors%20and%20continuous%20variables/Cape_fur_seals.jpg width = "500">
 
-Two male pinnipeds (Cape Fur Seals *Arctocephalus pusillus*, actually a species of sealion) competing for territory in which to defend a group of females. Photo copyright Rob Knell 1999.
+Two male pinnipeds (Cape Fur Seals *Arctocephalus pusillus*, actually a species of sealion) competing for territory in which to defend a group of females. Photo copyright Rob Knell 2019.
 
 <br>
 
@@ -213,7 +216,7 @@ Take a look at these diagnostics and try to answer these questions.
 <br>
 <details><summary>**Click here for more on the diagnostics**</summary>
 
-The diagnostic plots do not iondicate anything particualrly concerning. The qq-plot shows no serious deviation from what would be expected if the residuals were normally distributed. The residuals versus fitted values plot shows some hint of increasing variance with higher fitted values but this is not clear. When sample sizes are relatively small it becomes more difficult to see real patterns on diagnostic plots. Furthermore, when sample sizes are small we quite often see patterns that are more a consequence of the chance distribution of a few large positive or negative residuals than representative of a real issue with the data. Given the uncertainty about whether there really is heteroskedasticity, and the general robustness of the linear model, we will leave it as it is.
+The diagnostic plots do not iondicate anything particularly concerning. The qq-plot shows no serious deviation from what would be expected if the residuals were normally distributed. The residuals versus fitted values plot shows some hint of increasing variance with higher fitted values but this is not clear. When sample sizes are relatively small it becomes more difficult to see real patterns on diagnostic plots. Furthermore, when sample sizes are small we quite often see patterns that are more a consequence of the chance distribution of a few large positive or negative residuals than representative of a real issue with the data. Given the uncertainty about whether there really is heteroskedasticity, and the general robustness of the linear model, we will leave it as it is.
 </details>
 
 ## Interpretation of the pinniped model
@@ -382,6 +385,8 @@ legend("topleft",
 ```
 
 
+</details>
+
 ### Final point: independence of data
 
 As we've discussed in earlier tutorials, independence of data is a fundamental assumption behind this sort of analysis and also something that you can't really check: rather you have to think a out it when designing your study. Are the data points in this study independent? No --- because some of the species are more cloesly related to some of the other species, and so these are likely to be more similar than we'd expect by chance even in the absence of any effect of mating system. As an example of this take a look at the species in this dataset with male body masses of less than 100Kg.
@@ -393,9 +398,10 @@ pinniped[which(pinniped$Male_mass_Kg < 100),]
 
 Six of these are from the genus *Phoca*, and all of these have monogynous males. What's more, these are all the species from the genus *Phoca* on the dataset. There's an obvious capacity here for apparent patterns in the dataset to be driven by evolutionary history rather than other factors. It could simply be the case that the common ancestor of the genus *Phoca* was small and monogynous, and that any apparent tendency for smaller males to be monogynous is a consequence of that rather than any evolutionary tendency towards small size in monogynous species. This is not something that we can correct for in this analysis here, but there are techniques for correcting for phylogenetic non-independence such as Phylogenetic Generalised Least Squares or PGLS. Yhis is what Fitzpatrick et al. used in their paper: I'm pleased to say that the fundamental conclusions were unchanged.
 
-</details>
+
 
 ## Exercise 2: Insulin-like peptides and beetle weaponry
+
 
 In many species of animal one sex (usually the male, but not always) carries weapons such as horns, enlarged mandibles or similar which are used in contests with other animals from the same species. These weapons are often extremely variable in size between individuals, and an interesting question is why this should be and how the growth of these weapons is regulated. In 2019 a team of scientists based in Japan and the USA^2^ published the results of an in-depth study on the regulation of weapon size in a beetle called the broad-horned flour beetle, *Gnatocerus cornutus*. Males of this species have enlarged mandibles which they use in fights with other males to gain access to females. There is considerable variation in the length of these mandibles, much of which is known to be associated with the diet of the males during development. 
 
@@ -435,19 +441,19 @@ beetle$treatment <- as.factor(beetle$treatment)
 summary(beetle$treatment)
 ```
 
-`GFP` refers to the beetles given RNAi for Green Flourescent Protein (a jellyfish protein) as a control, and `1ILP` to `5ILP` are the five insulin-like protein genes which were suppressed using RNAi in the final instar larvae. Let's draw a scatterplot to get an idea of what our data look like.
+`GFP` refers to the beetles given RNAi for Green Flourescent Protein (a jellyfish protein) as a control, and `1ILP` to `5ILP` are the five insulin-like protein genes which were suppressed using RNAi in the final instar larvae. Let's draw a scatterplot of `ML` against `EW`, colour coded by the levels of `treatment` to get an idea of what our data look like.
 
-Because we have lots of factor levels we'll use a custom colour palette from the RColorBrewer package which gives R users access to the colour palettes from [the color brewer website](https://colorbrewer2.org/). The package will be automatically installed if you are using a recent version of R, otherwise you might need to install it yourself using `install.packages("RColorBrewer")`. We can generate a palette with 6 colours like this:
-
+Because we have lots of factor levels we'll use a colour palette from the RColorBrewer package. This package gives R users access to the colour palettes from [the color brewer website](https://colorbrewer2.org/). The package will be automatically installed if you are using a recent version of R, otherwise you might need to install it yourself using `install.packages("RColorBrewer")`. We can generate a palette with 6 colours like this:
+  
 ```{r}
 library(RColorBrewer)
 
 palette1 <- brewer.pal(n = 6, name = 'Dark2')
 ```
 
-Now to draw our scatterplot. To 
+Now to draw our scatterplot. See if you can fill in the XXXXX parts.
 
-```{r beetle_scatterplot1, exercise = TRUE}
+```{r beetle_scatterplot1, exercise = TRUE, exercise.lines = 15}
 
 plot(XXXXX ~ XXXXX,
      data = XXXXX,
@@ -455,7 +461,7 @@ plot(XXXXX ~ XXXXX,
      pch = 16,
      xlab = "XXXXX",
      ylab = "XXXXX"
-     )
+)
 
 legend("topleft", 
        col = XXXXX,
@@ -465,18 +471,29 @@ legend("topleft",
 ```
 
 ```{r beetle_scatterplot1-hint-1}
-
+# The plot should be relatively easy: 
+# we want ML plotted against EW with the
+# dataframe as beetle. For the axis labels
+# don't forget the units are µm 
+# 
+# For the legend col and pch should
+# be the same as for the plot
+# 
+# The legend text (the legend = argument)
+# needs to be the levels of the treatment
+# factor 
 
 ```
 
-```{r beetle_scatterplot-hint-2}
-plot(EL ~ EW,
+```{r beetle_scatterplot1-hint-2}
+# This is the solution
+plot(ML ~ EW,
      data = beetle,
      col = palette1[treatment],
      pch = 16,
      xlab = "Elytron width (µm)",
      ylab = "Mandible length (µm)"
-     )
+)
 
 legend("topleft", 
        col = palette1,
@@ -485,5 +502,50 @@ legend("topleft",
 )
 ```
 
+Have a look at the plot and the patterns in the data. 
+
+```{r beetle_scatterplot1_quiz, echo=FALSE}
+
+
+question("Based on the scatterplot above, which of the following do you think are correct? More than one question can be correct",
+  answer("The relationship between elytron width and mandible length is curved and it will be necessary to use a quadratic term in our model", message  = "Answer 1: It's hard to be absolutely sure about this but there's no clearly curved relationshipds there."),
+  answer("The beetles treated with 1ILP seem to have much shorter mandibles than do the others.", correct = TRUE),
+  answer("There is one data point with an extreme value for mandible which we should consider possibly removing as an outlier", correct = TRUE),
+  answer("Both variables show strong positive skew and a data transformation such as a log transformation will be necessary before further analysis", message = "Answer 2: There is nothing here to indicate positive skew"),
+  answer("The two data points for beetles with an elytron width of less than 1200 µm appear to be anomalously small and we should consider removing these as outliers", message = "These were small beetles but there's nothing to indicate that their size is sufficiently small that we should consider them as being very unlikely values or as potentially having been generated by a different process from the ones we're interested in.") 
+)
+```
+<details></summary>**Click here for more on what to do with these data**</summary>
+
+As a rule of thumb, it's always best to avoid removing data from an analysis for any reason. Nonetheless, we do sometimes get data points that just look like they shouldn't be there, and sometimes they really shouldn't: errors can be made during measurement and recording data, and other errors can be made such as misidentification of individuals, mistakes in care of experimental plants, animals or cultures or in the preparation of reagents and so on. Detecting and dealing with such anomalies is fraught with risk because because the potential for bias and unconsciously altering the results to fit a particular hypothesis is so high. In the mind of your author, the only time when it's really justified is when there is obviously something anomalous about a data point which means that you can be sure that it should not be there. Impossible values such as negative values when the variable in question cannot be negative, or fractions when the data can only be integers, are clearly anomalous and an indicator that an error has been made in measuring or recording the value. When it comes data points with values that are just unlikely, however, things are much more difficult. In these cases it's good practice to think about four questions. 
+
+Is the data point clearly so far outside the range that would be expected given the distribution of the rest of the data that in all probability an error has been made?
+
+Based on your knowledge of the system, is the value of the data point one that is possible?
+
+Is it possible that the experimental protocol might have caused this extreme value?
+
+Is this single data point likely to have an disptoprtionate effect on the outcome of the analysis?
+
+In this case, the individual with the mandible length of 921 µm has a mandible length that is very much higher than all of the rest. Furthermore, there's no indication of positive skew in the remainder of the data which could lead to a few very high values. Examining the data more closely also shows us something noteworthy:
+
+```{r}
+beetle[15:30,]
+```
+Have a look and see if you can spot it. The anomalous data point is number 24.
+
+<details><summary>**Click here for more**</summary>
+
+The ML value for data point 24 is 921 and is recorded with no decimal places. All of the other values for ML are recorded to two decimal places. This suggests that there has been an error in recording the value </details>
+
+
+
+
+
+
+and what we know about the system that there must have been an error in its recording or some other problem. In these cases, where it's possible to make a clear argument that the data point should not be there 
+
+</details>
+
 <hr>
-2. Okada, Y., Katsuki, M., Okamoto, N., Fujioka, H. & Okada, K. (2019) A specific type of insulin-like peptide regulates the conditional growth of a beetle weapon. PLoS biology, 17, e3000541.
+  2. Okada, Y., Katsuki, M., Okamoto, N., Fujioka, H. & Okada, K. (2019) A specific type of insulin-like peptide regulates the conditional growth of a beetle weapon. PLoS biology, 17, e3000541.
