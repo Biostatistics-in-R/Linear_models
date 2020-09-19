@@ -1,5 +1,5 @@
 ---
-title: "Linear models 4: Multiple Regression"
+title: "Linear models 5: Multiple Regression"
 output: 
   learnr::tutorial:
     progressive: false

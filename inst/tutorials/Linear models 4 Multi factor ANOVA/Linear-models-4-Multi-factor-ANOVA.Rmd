@@ -1,5 +1,5 @@
 ---
-title: "Linear models 3: Multi-factor ANOVA"
+title: "Linear models 4: Multi-factor ANOVA"
 output: 
   learnr::tutorial:
     progressive: false
@@ -16,6 +16,7 @@ description: >
 ```{r setup, include=FALSE}
 library(learnr)
 library(gplots)
+library(ggplot2)
 knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, fig.width = 5, fig.height = 5)
 mouse_movement <-
   read.csv(
@@ -27,11 +28,13 @@ bacteria <-
   read.csv(
     "https://github.com/rjknell/Linear_models/raw/master/data/Robinson_zebra_fish_bacteria.csv",
   )
+
+bacteria1 <- subset(bacteria, Line ==1)
 ```
 
 ## Adding extra variables to a linear model
 
-So far we've seen how the linear model can cope with both factors and continuous variables as explanatory variables, and that the way that variance is partitioned for both types of epxlanatory variable is fundamentally the same. Linear models can also cope with more than one explanatory variable, so you can analyse the effect of several different things that might influence your variable of interest at the same time. This has some important benefits over analysing each explanatory variable's effect separately:
+So far we've seen how the linear model can cope with both factors and continuous variables as explanatory variables, and that the way that variance is partitioned for both types of explanatory variable is fundamentally the same. Linear models can also cope with more than one explanatory variable, so you can analyse the effect of several different things that might influence your variable of interest at the same time. This has some important benefits over analysing each explanatory variable's effect separately:
 
 * Fitting a single model reduces the number of statistical tests which we need to do, reducing the probability of type 1 errors.
 
@@ -167,7 +170,15 @@ The statistics for the two main effects change depending on whether their order 
 
 Do we need to worry about this here? Maybe. One option is to use something called the *type III sums of squares* --- a different way of calculating the sums of squares which treats every term as if it were the last term entered into a model, so in this case the SS for Sex is calculated based on data which has already had the SS for Treatment and for the interaction partitioned out, and the SS for Treatment is calculated based on data which has already had the SS for Sex and for the interaction partitioned out. Some statistical software (e.g. SAS) uses these type III sums of squares by default, so if your analysis is giving a different result from one done with different software then this is worth bearing in mind as a possible explanation. There are also type II sums of squares but these only work in models where there is no interaction term.
 
-To calculate the type III sums of squares we can use the `Anova()` function from the `car` package. Note that this function has a capital A to distinguish it clearly and straightforwardly from the `anova()` function we've already used. What could possibly go wrong?
+There are two options for calculating significance using type III sums of squares. One is to use the `drop1()` function in base R. This actually carries out a *deletion test* on the model: it refits the model with the term in question removed and then compares it with the original model using a *partial F-test*, which is a version of the F-test that can be used to compare nested models. This is the equivalent of calculating the type III sums of squares. `drop1()` will only delete terms that can sensibly be compared with the full model so if we have both explanatory variables also present in an interaction term it will only give us a p-value for the interaction:
+
+```{r}
+drop1(mouse1, test = "F")
+```
+
+Two things to note here are 1) the p-value here is the same as the one form the ANOVA table. This is because the interaction term is entered last in the model anyway. If there were other explanatory variables which were not included in the interaction term we would also get deletion tests for these, however, and they wold be different. 2) As we will discuss later, if there is an interaction then the p-values for the main effects included in the interaction term are fairly meaningless, so in this case the p-value for the interaction term only is arguably the only appropriate one to look at.
+
+For the second option, we can use the `Anova()` function from the `car` package. Note that this function has a capital A to distinguish it clearly and straightforwardly from the `anova()` function we've already used. What could possibly go wrong?
 
 ```{r eval = FALSE}
 library(car)
@@ -183,7 +194,7 @@ print(Anova(mouse1, type = "III"))
 
 This supports what we've already calculated using the type I sums which are the default option in R: both main effects are significant but the interaction term is non-significant.
 
-Since the interaction is very far from significant, and there's nothing to indicate that there is an important interaction effect here, we can consider generating a new and more parsimonious model without the interaction term. Ther is more in the tutorial on model selection on the reasoning behind this and when it might or might not be justified.
+Since the interaction is very far from significant, and there's nothing to indicate that there is an important interaction effect here, we can consider generating a new and more parsimonious model without the interaction term. There is more in the tutorial on model selection on the reasoning behind this and when it might or might not be justified.
 
 ```{r eval = FALSE}
 mouse3 <- lm(SLA ~ Treatment + Sex, data = mouse_movement)
@@ -234,7 +245,7 @@ The next row is labelled `TreatmentWater`.
 TreatmentWater    -4545       1212  -3.750 0.000453 ***
 ```
 
- This coefficient gives the estimated difference between the mean for mice with paternal nicotine treatment (the intercept) and mice with paternal water treatment - mice whose fathers were treated with water cause 4545 fewer triggers per 12 hours. Because we have no interaction term in our model this applies to both sexes of mice equally: looking at this from the perspective of the nicotine treatment, both male and female mice whose fathers were treated with nicotine cause, on average, 4545 extra triggers per night. In other words, paternal nicotine treatment is associated with a considerable increase in spontaneous locomotor activity --- almost a third more in fact. The standard error, t-test and the small marginal p-value for this row of the coefficients table tells us that an effect this big, or bigger, is unlikely to have arisen simply by sampling error.
+This coefficient gives the estimated difference between the mean for mice with paternal nicotine treatment (the intercept) and mice with paternal water treatment - mice whose fathers were treated with water cause 4545 fewer triggers per 12 hours. Because we have no interaction term in our model this applies to both sexes of mice equally: looking at this from the perspective of the nicotine treatment, both male and female mice whose fathers were treated with nicotine cause, on average, 4545 extra triggers per night. In other words, paternal nicotine treatment is associated with a considerable increase in spontaneous locomotor activity --- almost a third more in fact. The standard error, t-test and the small marginal p-value for this row of the coefficients table tells us that an effect this big, or bigger, is unlikely to have arisen simply by sampling error.
 
 The last line is labelled `SexMale`.
 
@@ -268,7 +279,7 @@ library(gplots)
 # and we are drawing the means and CIs larger and thicker
 # than the defaults (cex = 2.5, barwidth = 2). 
 plotmeans(
-  SLA ~ interaction(Treatment:Sex),
+  SLA ~ interaction(Treatment,Sex),
   data = mouse_movement,
   n.label = FALSE,
   pch = 18,
@@ -288,7 +299,7 @@ plotmeans(
 # the colour makes the points semitransparent
 
 # This horror show of nested parentheses:
-# jitter(as.numeric(interaction(Treatment:Sex)), 0.6),
+# jitter(as.numeric(interaction(Treatment,Sex)), 0.6),
 # uses the interaction() function to generate a factor
 # with all the combinations of levels from the interaction
 # of sex and treatment, then converts it to numerical
@@ -299,7 +310,7 @@ plotmeans(
 
 
 points(
-  SLA ~ jitter(as.numeric(interaction(Treatment:Sex)), 0.6),
+  SLA ~ jitter(as.numeric(interaction(Treatment,Sex)), 0.6),
   data = mouse_movement,
   pch = 16,
   col = "#00777788",
@@ -363,25 +374,29 @@ str(bacteria)
 ```
 
 
-The response variable is `CI` (Competitive Index) and we have three other variables: `Line`, `Host` and `Passage`. `Line` is a number from 1 to 3 and refers to the fact that the experimenters actually repreated the experiment three times with three independently evolved lines of bacteria. For the present we'll not worry about `Line` but we will include it in a later analysis.
+The response variable is `CI` (Competitive Index) and we have three other variables: `Line`, `Host` and `Passage`. `Line` is a number from 1 to 3 and refers to the fact that the experimenters actually repeated the experiment three times with three independently evolved lines of bacteria. For the present we'll just analyse the data from line 1 but we will look at a model including this factor in the tutorial on model selection. Let's start by using `subset()` to select just the data associated with Line 2. We'll call our new data frame `bacteria1`.
+
+```{r}
+bacteria1 <- subset(bacteria, Line == 2)
+```
 
 None of our explanatory vectors are currently factors but we need both `Host` and `Passage` to be specified as such. You can do this using the `as.factor()` function. I've done one, you'll need to do the other. Once you've done that check the data frame again using `str()`.
 
 ```{r make_factors, exercise = TRUE}
-bacteria$Host <- as.factor(bacteria$Host)
+bacteria1$Host <- as.factor(bacteria1$Host)
 
 ```
 
 ```{r make_factors-hint-1}
 # This is the solution
 
-bacteria$Host <- as.factor(bacteria$Host)
-bacteria$Passage <- as.factor(bacteria$Passage)
+bacteria1$Host <- as.factor(bacteria1$Host)
+bacteria1$Passage <- as.factor(bacteria1$Passage)
 
-str(bacteria)
+str(bacteria1)
 ```
 
-All looks good so far. There are two factors to include in our analysis for the moment. `Host` has two treatments, `WT` and `myd88` and `Passage` also has two treatments, `4` and `18`. Before we jump in and fit a model, though, we should have a look at our data. See if you can draw a boxplot of `CI` as explained by `Host` and `Passage`.
+All looks good so far. You can see that we've gone from 208 observations to 64 as is a consequence of subsetting out just one line's worth of data. There are two factors to include in our analysis. `Host` has two treatments, `WT` and `myd88` and `Passage` also has two treatments, `4` and `18`. Before we jump in and fit a model, though, we should have a look at our data. See if you can draw a boxplot of `CI` as explained by `Host` and `Passage`.
 
 ```{r bacteria_boxplot, exercise = TRUE}
 
@@ -413,7 +428,7 @@ boxplot(response ~ explanatory1 * explanatory2,
 # Here's a solution
 
 boxplot(CI ~ Passage * Host,
-        data = bacteria,
+        data = bacteria1,
         ylab = "Competitive index",
         xlab = "Treatment combination")
 ```
@@ -423,7 +438,7 @@ What do you see?
 ```{r boxplot-quiz, echo=FALSE}
   question(
     "What can we say about the shape of the data distributions?",
-    answer("There is extreme positive skew", correct = TRUE),
+    answer("There is strong positive skew", correct = TRUE),
     answer("It is not clear but there is some indication of negative skew"),
     answer("It's not possible to say because the sample size is too small"),
     answer(
@@ -432,12 +447,12 @@ What do you see?
 )
 ```
 
-<details><summary>**Click here for more**</summary>
+<details><summary>**Click here for more: what to do with these data?**</summary>
 
 As you have hopefully seen, these data look like they are very positively skewed. Almost all of the data have values between zero and about 1000, but there are also some datapoints with much higher values. Given that the linear model assumes normality in the errors, or the residuals, rather than in the raw data we should be cautious about worrying about apparent violations in the raw data. In this case however, it's clear that if we were to fit a model to these data our residuals would be exceedingly skewed and also we can imagine that those extreme values would have some disproportionate effects on our fitted model. In this case we can use a data transformation to try to fix this extreme skew, with the two easy options being a square root transformation and a log transformation. Just checking:
 
 ```{r}
-summary(bacteria$CI)
+summary(bacteria1$CI)
 ```
 
 There aren't any zeros in the data so we can use a log transformation without having to add a constant to the dataset. Let's compare what we see with the two different transformations: see if you can modify this code to plot one boxplot of square root transformed data and then another one with log transformed data.
@@ -445,12 +460,12 @@ There aren't any zeros in the data so we can use a log transformation without ha
 ```{r transformations, exercise = TRUE}
 
 boxplot(CI ~ Passage * Host,
-        data = bacteria,
+        data = bacteria1,
         ylab = "Competitive index",
         xlab = "Treatment combination")
 
 boxplot(CI ~ Passage * Host,
-        data = bacteria,
+        data = bacteria1,
         ylab = "Competitive index",
         xlab = "Treatment combination")
 ```
@@ -463,25 +478,25 @@ boxplot(CI ~ Passage * Host,
 ```{r transformations-hint-2}
 # This is the solution
 boxplot(sqrt(CI) ~ Passage * Host,
-        data = bacteria,
+        data = bacteria1,
         ylab = "Square root of competitive index",
         xlab = "Treatment combination")
 
 boxplot(log(CI) ~ Passage * Host,
-        data = bacteria,
+        data = bacteria1,
         ylab = "Log competitive index",
         xlab = "Treatment combination")
 ```
 
-This is a nice illustration of the effect of the two different transformations. You can see that the square root transformation is not sufficient to get rid of the skew in these data, but the log transformation gives us some nicely symmetrical boxplots. We'll do our analysis on log transformed data.
+This is a nice illustration of the effect of the two different transformations. You can see that the square root transformation is not quite sufficient to get rid of the skew in these data, but the log transformation gives us some nicely symmetrical boxplots. We'll do our analysis on log transformed data.
 </details>
 <br><br><hr>
 
 2. Robinson, C.D., Klein, H.S., Murphy, K.D., Parthasarathy, R., Guillemin, K. & Bohannan, B.J.M. (2018) Experimental bacterial adaptation to the zebrafish gut reveals a primary role for immigration. PLoS biology, 16, e2006893.
 
-## Fitting the model and diagnostics
+## Model fitting and diagnostics
 
-To start with we will ignore the `Line` variable so we have two explanatory factors and we'd like to fit both of these plus their interaction. Save the fitted model object as `M1`, and then check the significance of the interaction term by bringing up an ANOVA table using `anova()`. We won't worry about type I versus type III sums of squares for the moment since we're really only concerned with the significance of the interaction term. Don't forget to log the response variable and tell `lm()` that you're using data from `bacteria`. As a consequence of some weirdness that happens with the learnr package, please enclose your `anova()` function call in a `print()` function to keep the ANOVA table formatting consistent. Sorry about this.
+To start with we will ignore the `Line` variable so we have two explanatory factors and we'd like to fit both of these plus their interaction. Save the fitted model object as `M1`, and then check the significance of the interaction term by bringing up an ANOVA table using `anova()`. We won't worry about type I versus type III sums of squares for the moment since we're really only concerned with the significance of the interaction term. Don't forget to log the response variable and tell `lm()` that you're using data from `bacteria1`. As a consequence of some weirdness that happens with the learnr package, please enclose your `anova()` function call in a `print()` function to keep the ANOVA table formatting consistent. Sorry about this.
 
 ```{r model_fit_1, exercise = TRUE}
 
@@ -500,16 +515,18 @@ print(anova(M1))
 ```{r model_fit_1-hint-2}
 # Here is the solution
 M1 <- lm(log(CI) ~ Passage * Host,
-    data = bacteria)
+    data = bacteria1)
 
 print(anova(M1))
 ```
 
-YOu can see from this that we have a highly significant interaction between `Host` and `Passage` --- what this means is that the effect of `Passage` depends on whether the level of `Host` is `WT` or `myd88`, or alternatively, the effect of `Host` depends on whether `Passage` is `4` or `18`. Before we look into this further we should check the diagnostics for our model. Remember that you can bring up just the first two diagnostic plots with `which = 1:2`.
+You can see from this that we have a significant interaction between `Host` and `Passage` --- what this means is that the effect of `Passage` depends on whether the level of `Host` is `WT` or `myd88`, or alternatively, the effect of `Host` depends on whether `Passage` is `4` or `18`. Before we look into this further we should check the diagnostics for our model. Remember that you can bring up just the first two diagnostic plots with `which = 1:2`.
 
 ```{r prepare-M1, echo = FALSE}
+bacteria1$Passage <- as.factor(bacteria1$Passage)
+
 M1 <- lm(log(CI) ~ Passage * Host,
-    data = bacteria)
+    data = bacteria1)
 ```
 
 ```{r bacteria_model1_diagnostics, exercise = TRUE, exercise.setup = "prepare-M1"}
@@ -531,16 +548,16 @@ What do the diagnostic plots tell us? More than one answer can be correct.
 ```{r diagnostics-quiz, echo=FALSE}
   question(
     "Which of the following is correct?",
-    answer("Data points 44, 95 and 115 are ideintified as outliers and should be removed", message = "Answer 1. R will always identify the three residuals with the largest absolute values. That doesn't mean they are problematic and in this case there's no reason to be concerned.     "),
+    answer("Data points 44, 95 and 115 are identified as outliers and should be removed", message = "Answer 1. R will always identify the three residuals with the largest absolute values. That doesn't mean they are problematic and in this case there's no reason to be concerned.     "),
     answer("Because the points in the qq plot are all close to the line of unity we have a residual distribution which is very close to a normal distribution", correct = TRUE),
     answer("The systematic deviation from the line in the qq plot could be because the data are not independent", message = "Answer 3. The qq plot can't tell you anything about the independence of your data points, it only gives you information on how similar your residuals are to a normal distribution      "),
     answer("The plot of residuals versus fitted values indicates potentially important problems with heteroskedasticity", message = "Answer 4. The amount of dispersion in the residuals is roughly the same across the plot, indicating that there's no substantial change in the variance as the fitted values change      "),
     answer("The plot of residuals versus fitted values indicates potentially important problems with non-independence of data as shown by the data being divided into four groups", message = "Answer 5. The data are divided into four groups because the model is estimating four means      "),
-    answer("The diagnostic plots are exemplary and give no reason for concern", correct = TRUE) 
+    answer("The diagnostic plots are fine and give no reason for concern", correct = TRUE) 
 )
 ```
 
-## Interpreting the fitted model with two factors
+## Interpretation
 
 We have a fitted model with a highly significant interaction term and we're happy that the diagnostic plots aren't showing us anything that gives any cause for concern. Next question: what does this mean?
 
@@ -572,14 +589,14 @@ question("The line labelled (Intercept) gives the estimated mean value for what?
 ),
 
 question("What is the estimated mean for myd88 Host and 18 Passages?",
-         answer("3.4415"),
-         answer("3.4415 + 0.4381", correct = TRUE),
-         answer("3.4415 - 1.8047"),
-         answer("3.4415 - 1.8047 + 2.9578")
+         answer("2.616"),
+         answer("2.616 + 1.3122", correct = TRUE),
+         answer("2.616 - 1.5341"),
+         answer("2.616 + 1.3122 - 1.5341")
 ),
 
 question("Considering _only the myd88 treatments_, which statement is true?",
-         answer("Bacteria passaged for 18 generations are signficantly more cometitive than those passaged for 4"),
+         answer("Bacteria passaged for 18 generations are signficantly more competitive than those passaged for 4"),
          answer("Bacteria passaged for 18 generations are significantly less competitive than those passaged for 4"),
          answer("The competiveness of bacteria passaged for 18 generations is signficantly similar to that of bacteria passaged for 4 generations"),
          answer("Bacteria passaged for 18 generations are slightly more competitive than those passaged for 4, but we have little confidence that this pattern has arisen by anything other than random chance", correct = TRUE)
@@ -587,54 +604,158 @@ question("Considering _only the myd88 treatments_, which statement is true?",
 )
 ```
 
+<br><br>
 
-<details><summary>**Click here for more**></summary>
-<br>
-For the bacteria competed in the myd88- hosts the summary table tells us that there is little effect of the number of passages the bacteria went through in their experimental evolution: the estimated mean for 4 passages is similar to that for 18 and the marginal p-value for the row of the coefficients table in question is considerably greater than 0.05. So far all is fine, now what about the bacteria competing in the wild type (WT) hosts? This is where the interaction term shows itself.
+### Understanding the interaction
+
+For the bacteria competed in the myd88^-^ hosts the summary table tells us that there is little effect of the number of passages the bacteria went through in their experimental evolution: the estimated mean for 4 passages is similar to that for 18 and the marginal p-value for the row of the coefficients table in question is considerably greater than 0.05. So far all is fine, now what about the bacteria competing in the wild type (WT) hosts? This is where the interaction term shows itself.
 
 Here's that coefficients table again:
 
 ```
 Coefficients:
                  Estimate Std. Error t value Pr(>|t|)    
-(Intercept)        3.4415     0.2957  11.637  < 2e-16 ***
-Passage18          0.4381     0.4030   1.087    0.278    
-HostWT            -1.8047     0.4182  -4.315 2.49e-05 ***
-Passage18:HostWT   2.9578     0.5700   5.190 5.08e-07 ***
+(Intercept)        2.6160     0.5420   4.826 9.95e-06 ***
+Passage18          1.3122     0.7666   1.712   0.0921 .  
+HostWT            -1.5341     0.7666  -2.001   0.0499 *  
+Passage18:HostWT   2.8503     1.0841   2.629   0.0109 *  
 ```
 The `(Intercept)` is the estimated mean for myd88^-^ hosts and 4 passages.
 
-The `Passage18` row gives the estimated change in the mean log CI associated with changing the bacteria from those that had 4 passages to those that had 18. If there were no interaction, as in the example that was worked through earlier in the tutorial, this would apply to all levels of the other factor. Because there is an interaction this applies to the myd88^-^ treatments but things get a bit more complicated with the WT treatments.
+The `Passage18` row gives the estimated change in the mean log CI associated with changing the bacteria from those that had 4 passages to those that had 18. If there were no interaction, as in the example that was worked through earlier in the tutorial, this would apply to all levels of the other factor. Because there is an interaction, however, this applies to the myd88^-^ treatments but things get a bit more complicated with the WT treatments.
 
-The `HostWT` row is the effect of changing `Host` to WT from myd88^-^, when the bacteria have been through 4 passages. You can see that this is a negative effect and that it is associated with a very small marginal p-value, meaning that we're reasonably confident that this isn't just something that arose through smapling error. The estimated mean log CI for WT hosts and 4 passages is therefore 3.4415 - 1.8047 =  1.6368.
+The `HostWT` row is the effect of changing `Host` to WT from myd88^-^, when the bacteria have been through 4 passages. You can see that this is a negative effect and that it is associated with a small marginal p-value, meaning that we're somewhat confident that this isn't just something that arose through sampling error --- the p-value is only fractionally below 0.05 however so we have to be cautious. The estimated mean log CI for WT hosts and 4 passages is 2.616 - 1.5341 =  1.0819.
 
-Now, what about the mean for WT hosts and bacteria which have had 18 passages? If there were no interaction term this would be 3.4415 (intercept) + 0.4381 (effect of passage number) - 1.8047 (effect of host). It's not though, because we have an interaction term, so the effect of passage number depends on the host. The last row of the coefficients table, `Passage18:HostWT` gives us the effect of this interaction which is 2.9578. This is the difference in the effect of passage number when the host is WT as opposed to an myd88^-^ host: so the estimated mean for WT hosts and bacteria that have had 18 passages is (wait for it)
+Now, what about the mean for WT hosts and bacteria which have had 18 passages? If there were no interaction term this would be 2.616 (intercept) + 1.3122 (effect of passage number) - 1.5341 (effect of host). It's not though, because we have an interaction term, so the effect of passage number depends on the host. The last row of the coefficients table, `Passage18:HostWT` gives us the effect of this interaction which is 2.8503. This is the difference in the effect of passage number when the host is WT as opposed to an myd88^-^ host: so the estimated mean for WT hosts and bacteria that have had 18 passages is (wait for it)
 
-3.4415 (intercept) + 0.4381 (effect of passage number in myd88^-^ hosts) - 1.8047 (effect of host) + 2.9578 (difference in the effect of passage number depending on the host) = 5.0327.
+2.616 (intercept) + 1.3122 (effect of passage number in myd88^-^ hosts) - 1.5341 (effect of host) + 2.8503 (difference in the effect of passage number depending on the host) = 5.2444.
 
-We can check this against the actual mean:
+We can check this against the actual mean.
 
 ```{r}
-with(bacteria, mean(log(CI[Passage == "18" & Host == "WT"])))
+with(bacteria1, mean(log(CI[Passage == "18" & Host == "WT"])))
 ```
 
+They're the same.
 
+Now that we have an idea of what the coefficients table means, how about trying to come up with a useful interpretation of what all this is telling us. This will be easier if we have a plot of our means and confidence intervals. This is some of the code we used above to draw the means and confidence intervals for the mouse movement data: we'll skip drawing in the jittered raw data for the moment. See if you can adapt this code to give us a plot of means and confidence intervals for the bacterial competition data.
 
-
-
-```{r}
+```{r confidence_plot, exercise = TRUE, exercise.lines = 14}
 library(gplots)
 
-# Plot means and 95% CIs. Note no x-axis (xaxt = "n") or x-axis label  
-# (xlab = "") plotted, no lines connecting the means (connect = FALSE), 
-# no sample size indicators (n.label = FALSE)
-# and we are drawing the means and CIs larger and thicker
-# than the defaults (cex = 2.5, barwidth = 2). 
 plotmeans(
-  log(CI) ~ interaction(Host:Passage),
-  data = bacteria,
+  SLA ~ interaction(Treatment,Sex),
+  data = mouse_movement,
   n.label = FALSE,
   pch = 18,
+  col = "darkblue",
+  barcol = "darkblue",
+  connect = FALSE,
+  xlab = "",
+  ylab = "SLA (triggers per 12 hours)",
+)
+```
+
+```{r confidence_plot-hint-1}
+# You need to:
+#   Change the variable names in the formula
+#   Change the name of the data frame in data = 
+#   Change the y-axis label
+# 
+# You can also, if you wish:
+#   Change the plot symbol
+#   Change the colours
+#   
+# Don't forget you need to log the response variable
+```
+
+```{r confidence_plot-hint-2}
+# The formula should read
+
+log(CI) ~ interaction(Passage,Host)
+```
+
+```{r confidence_plot-hint-3}
+# The data = argument should read
+
+data = bacteria1
+```
+
+```{r confidence_plot-hint-4}
+# Here is a solution
+library(gplots)
+
+plotmeans(
+  log(CI) ~ interaction(Passage,Host),
+  data = bacteria1,
+  n.label = FALSE,
+  pch = 16,
+  col = "darkblue",
+  barcol = "darkblue",
+  connect = FALSE,
+  xlab = "",
+  ylab = "Log competitive index"
+)
+```
+
+The x-axis is not marvellous but we can see what's going on. Let's summarise what we've got now.
+
+* When the host is myd88^-^ passage number does not significantly affect the competitive ability of the bacteria
+
+* When the host is WT the competitive ability increases substantially with passage number such that bacteria that have undergone 18 passages are much better competitors than those that have undergone 4 passages.
+
+This is what the interaction term means in this case: the effect of one variable depends on the value of the other. Finally we can also note that
+
+* Bacteria passaged 4 times were less competitive in WT hosts than in myd88^-^ hosts.
+
+### Two final points
+
+Let's look at the ANOVA table for this model (it doesn't matter whether we use type I or type III sums of squares, the result is qualitatively the same).
+
+```{r echo = FALSE}
+M1 <- lm(log(CI) ~ Passage * Host,
+    data = bacteria1)
+```
+
+```{r}
+anova(M1)
+```
+
+We can see that in addition to the highly significant interaction term we have a significant main effect of Passage but not one of Host. Does that mean much? Since we know that the effect of passage number is completely dependent on the host (and *vice-versa*), is it even meaningful to talk about the statistical significance of the main effect? Most statisticians would say no --- when a main effect is also present in a model in a higher-order interaction term, as is the case here, then there is little meaning to the statistical significance of the main effect. Many researchers nowadays would not report these p-values, and would only report the significance of the interaction term since that is the only one that has much meaning.
+
+A second point arises when we think about ways to test the idea that passage number has an effect in one group of hosts but not in another. You could think about testing this, not by fitting an ANOVA and looking for an interaction, but by doing two t-tests, one for each host type.
+
+```{r}
+t1 <- t.test(log(bacteria1$CI) ~ bacteria1$Passage, subset = bacteria1$Host == "WT")
+t2 <- t.test(log(bacteria1$CI) ~ bacteria1$Passage, subset = bacteria1$Host == "myd88")
+
+cat("P-value for WT hosts = ", t1$p.value)
+
+cat("P-value for myd88- hosts = ", t2$p.value)
+```
+
+The t-test for WT hosts is finds a highly significant difference, whereas the one for myd88^-^ hosts does not. Aha! you could say, there is a significant difference in one host but not the other, so the effect varies between hosts. OK... but this is not really a good test for whether the effect varies between hosts. The most important problem with this approach is that a non-significant result does not indicate that there is no effect, rather that we are unable to say with confidence that there is an effect. Furthermore, the analysis is not asking directly whether there is a difference between hosts and it could be affected by (for example) smaller sample sizes in one host than the other. Fitting a model and testing for an interaction is a far, far better way of asking whether an effect varies between groups. Nonetheless, this is a common statistical error and you are likely to see analyses reported where tests like this are used in this way —-- don't fall into this trap yourself.
+
+### Publication standard plot
+
+The plot we drew above is OK but not really up to scratch for a publication. Here's some code, similar to that which we used earlier for the mouse movement data, which will do a rather better job. It's fairly complex but feel free to have a look through it if you'd like to know more. I've also added some code for producing a similar figure in ggplot2 below. Again, this is only really here as an example and if you're not familiar with ggplot2 then just ignore it.
+
+
+
+```{r fig.width = 6, fig.height = 6}
+library(gplots)
+
+# Plot means and 95% CIs. Note no x-axis (xaxt = "n") or x-axis label
+# (xlab = "") plotted, no lines connecting the means (connect = FALSE),
+# no sample size indicators (n.label = FALSE)
+# and we are drawing the means and CIs larger and thicker
+# than the defaults (cex = 2.5, barwidth = 2).
+
+plotmeans(
+  log(CI) ~ interaction(Passage,Host),
+  data = bacteria1,
+  n.label = FALSE,
+  pch = 16,
   cex = 2.5,
   col = "darkblue",
   barcol = "darkblue",
@@ -647,23 +768,26 @@ plotmeans(
 )
 
 # Use points function to draw in the data.
-# The extra 88 at the end of the hex code for
-# the colour makes the points semitransparent
+# The extra 55 at the end of the hex code for
+# the colour makes the points semitransparent.
+# In the previous plot we had a value of 88 for this
+# but because thre is more overplotting here I made
+# the points more transparent.
 
 # This horror show of nested parentheses:
-# jitter(as.numeric(interaction(Treatment:Sex)), 0.6),
+# jitter(as.numeric(interaction(Host:Passage)), 0.6),
 # uses the interaction() function to generate a factor
 # with all the combinations of levels from the interaction
-# of sex and treatment, then converts it to numerical
+# of Host and Passage, then converts it to numerical
 # values, then adds some noise with the jitter() function
-# in order to reduce the amount of overplotting for the 
+# in order to reduce the amount of overplotting for the
 # individual data points in the final graph
 
 
 
 points(
-  log(CI) ~ jitter(as.numeric(interaction(Host:Passage)), 0.6),
-  data = bacteria,
+  log(CI) ~ jitter(as.numeric(interaction(Passage,Host)), 0.6),
+  data = bacteria1,
   pch = 16,
   col = "#00777755",
   cex = 1.2
@@ -672,20 +796,129 @@ points(
 
 # Draw in the axis, the axis ticks and the top line of
 # the tick labels
+# padj = moves the text down a little
+# The \n in the labels is an 'escape character' that 
+# adds a carriage return
+
 axis(
   side = 1,
   at = 1:4,
-  labels = c("4 Passages", "18 Passages", "4 Passages", "18 Passages")
+  padj = 0.5,
+  labels = c("4 \nPassages", "18 \nPassages", "4 \nPassages", "18 \nPassages")
 )
 
 # Use axis to draw in the "Female" and "Male" labels
 # at the appropriate place. Line = 1.5 moves the axis down
 # and lwd = 0 means the axis line is not drawn.
+# expression('myd88' ^ "\u2212" ) gives us the label with a
+# superscript minus sign. the \u2212 is a way of usin the
+# unicode symbol for a minus sign which loks a bit better.
 axis(
   side = 1,
   at = c(1.5, 3.5),
-  line = 1.5,
-  labels = c(expression('myd88' \u207B ), "Wild Type"),
+  line = 2.2,
+  labels = c(expression('myd88' ^ "\u2212" ), "Wild Type"),
   lwd = 0
 )
+```
+
+### GGplot2 example
+
+`ggplot()` won't calculate the 95% CIs for us like `plotmeans()` does so we'll need to do these ourselves.
+
+
+```{r}
+
+# Function to calculate the confidence interval distance
+ci95<- function(x) {
+return(qt(0.975, df = length(x) - 1) * sqrt(var(x)) / sqrt(length(x)))
+}
+
+# calculate means and the size of the CIs for each factor level combination
+means <-
+  with(bacteria1, tapply(
+    X = log(CI),
+    INDEX = interaction(Host,Passage),
+    FUN = mean
+  ))
+
+CIs <-
+  with(bacteria1, tapply(
+    X = log(CI),
+    INDEX = interaction(Host,Passage),
+    FUN = ci95
+  ))
+
+# Calculate upper and lower confidence intervals
+# for each mean
+UpperCIs <- means + CIs
+LowerCIs <- means - CIs
+
+# Assemble it into a data frame
+Host <- c("myd88", "WT", "myd88", "WT")
+Passage <- c(4,4,18,18)
+
+data1 <- data.frame(Host, Passage, means, UpperCIs, LowerCIs)
+
+# Clean up
+rm(means, CIs, UpperCIs, LowerCIs, Host, Passage)
+
+# Check the data frame
+print(data1)
+```
+
+Now that we have our mini data frame with the important values we can plot a graph with `ggplot()`
+
+```{r}
+# set up the plot basics
+p1 <-
+  ggplot(data = data1, aes(
+    x = Host,
+    y = means,
+    colour = as.factor(Passage)
+  )) +
+  
+# Specify the y axis limits
+  ylim(-3, 10) +
+  
+# Add the points for the means  
+  geom_point(position = position_dodge(width = 0.75), size = 3) +
+  
+# Add the errorbars
+  geom_errorbar(
+    aes(
+      x = Host,
+      ymin = LowerCIs,
+      ymax = UpperCIs,
+      colour = as.factor(Passage)
+    ),
+    position = position_dodge(width = 0.75),
+    width = 0.1
+  ) +
+  
+# Add in the data with some transparency and jitter
+  geom_point(
+    data = bacteria1,
+    aes(
+      x = Host,
+      y = log(CI),
+      colour = as.factor(Passage)
+    ),
+    alpha = 0.4,
+    position  = position_jitterdodge(),
+    show.legend = FALSE
+  ) +
+  
+# Set the colours
+  scale_color_manual(values = c("firebrick4", "steelblue")) +
+
+# Avoid the nasty default theme
+  theme_bw() + 
+  
+# Y axis label and the caption for the legend  
+  labs(y = "Log competitive index", colour = "Passage \n number")
+
+# Plot the graph
+p1
+
 ```

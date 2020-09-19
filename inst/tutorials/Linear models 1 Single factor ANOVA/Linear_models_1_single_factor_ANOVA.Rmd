@@ -34,8 +34,6 @@ This set of tutorials will teach you about one of the most important statistical
 
 The data we're going to be analysing come from a paper by Minggang Wang and coauthors published in the *New Phytologist* in 2018^1^. Wang *et al.* were studying the phenomenon of *plant-soil feedback* (PSF) whereby aspects of plant biology are affected by the presence of other plants in the soil before the one in question. The study organism in this case is ragwort, *Jacobea vulgaris*, an important and toxic weed in arable fields in Europe and is also highly invasive in other parts of the world. Ragwort is known to be strongly affected by PSF with plants grown in soil that has previously had plants of the same species growing in it exhibiting severely reduced growth.
 
-
-
 As part of a much larger and more wide-ranging study of the effects of PSY on ragwort, Wang *et al.* investigated the effect of soil organisms of different sizes on this PSF effect. To do this they grew individual ragwort plants in soil that was inoculated with water that had been mixed with "conditioned" soil from a pot which a ragwort plant had previously grown in. Before being added to the soil for the new plants, the water was passed through filters of either 1000, 20, 5 or 0.5 µm mesh size. The first of these would exclude soil animals over 1mm in size, the 20 µm filter would remove most of the very small animals that live in soil such as nematodes and collembola, the 5 µm mesh would exclude most fungi and the 0.2 µm mesh would filter out most bacteria. Each pot had a single seedling grown in it for 5 weeks after which they were harvested and a variety of measurements taken including the root biomass. The data are already loaded as a data frame called `ragwort`. 
 
 ### Initial exploratory analysis
@@ -86,7 +84,7 @@ The way we ask `lm()` to calculate an ANOVA on data like this with a single fact
 R1 <- lm(root_mass ~ inoculum, data = ragwort)
 
 # Generate ANOVA table
-anova(R1)
+print(anova(R1))
 ```
 
 This gives us a standard ANOVA table. There isn't a row for the total sum of squares but this is not informative anyway, and the error sum of squares is titled `Residuals` but the rest is the standard layout. The mean square values are the sums of squares divided by the appropriate df., the F-statistic is the treatment mean squares (0.0283) divided by the error mean squares (0.00444) and the p-value is the probability of observing an F-value of 6.38 or greater on an F-distribution with 3 and 41 degrees of freedom. Our p-value is a  small number and well below 0.05 so we conclude that on the basis of this ANOVA we have at least one mean which is significantly different from at least one other mean.
@@ -229,7 +227,7 @@ quiz(
       "P < 0.05 so we conclude that filter size and leaf mass are significantly correlated"
     ),
     answer(
-      "p < 0.05 indicating that at least one mean is signficantly different from at least one other", correct = TRUE
+      "p < 0.05 indicating that at least one mean is significantly different from at least one other", correct = TRUE
     )
   ),
    question(
@@ -567,103 +565,3 @@ quiz(
   )
 ```
 
-## ANOVA diagnostics
-
-Not all data are suitable for analysis with linear models including ANOVA. The way the analysis is calculated is based on a number of assumptions about the distribution of the data and if these are not met then the conclusions from the ANOVA can be incorrect. The important assumptions about the data for an ANOVA type model are:
-
-1. Data points are *independent* --- in other words, each data point is a separate measure of the effect in question. In the case of the experiments we've been looking at here, one way to maximise the independence of each data point is to grow only a single plant in each pot. If they'd grown more than one plant in each pot then the measurements from the plants in a single pot would not be independent because they would be more similar to each other than to plants from other pots. This is arguably the most important assumption of all, but it is not something that can be checked after analysis. Rather, we should be making sure that our data are independent by careful study design.
-
-1. The *errors are normal* --- here, *error* refers to the remaining variance in the data that we cannot explain, so in this case the distribution of the data points around the estimated means should be normal, or at least approximately so. NB you might have read or been told that the important assumption is that the data overall follow a normal distribution. This is not true and in fact the response variable can have any distribution so long as the *errors* are normal. 
-
-1. The *variance is equal between groups* --- for the present analyses the groups are the different treatment groups, and for our ANOVA to be reliable the variance of each group should be approximately the same.
-
-ANOVA-type analyses, and linear models generally, are surprisingly resilient to deviations from these assumptions. They will continue to produce reliable results when the errors are somewhat non-normal or there are moderate differences in variance between groups so long as the sample size is reasonably large and the design is roughly *balanced* (meaning that the sample sizes are the same or nearly so for each group). This means that unless our sample size is very small or the design is badly unbalanced (e.g. two groups with 30 measurements and one with 3) we do not have to be especially picky and can ignore minor violations of our assumptions. Nonetheless, major violations of these assumptions will invalidate our analysis so it's important to check these  every time you run one of these analyses. We do this using what are caled *diagnostic plots*. This video explains what these plots are showing and what to look out for.
-
-VIDEO
-
-To bring up the diagnostic plots for a linear model you can just use the `plot()` function with the model object as an argument, e.g. `plot(modelname)`. This will give four separate plots by default, but the first two of these are really the most important so we'll use the `which = ` argument to plot just these. Firstly the diagnostic plots for the root mass ANOVA model.
-
-```{r fig.cap = "Diagnostic plots for the root mass ANOVA"}
-# Two plots side-by-side please
-par(mfrow = c(1,2))
-
-plot(R1, which = 1:2)
-```
-
-The left hand plot shows us the residuals versus the fitted values. This gives us lots of information about how good our model is at describing the patterns in the data and also lets us check for increases or decreases in variance with increases in the fitted values. Our plot has the residuals arranged in four groups, because there are only four dfitted values, and there are no obvious patterns that might cause concern. The degree of spread for each group is roughly the same, so the assumption of equal variances is probably OK, and there are no obvious extreme values and no indication of anything else amiss.
-
-The right hand plot gives us information about how closely the residuals conform to a normal distribution. If they were perfectly normal they would all lie on the dotted line, but in practice this never happens. Here most of our data points are on or very close to the line but the ones with the most negative residuals are somewhat above the line and the ones with the most positive residuals are somewhat below the line. This tells us that the distribution of residuals has "thin tails" (or to use the statistical jargon it is somewhat "leptokurtotic"). This means that the most negative values are not as negative as we would expect were they following a normal distribution, and that if the distribution were truly following a normal distribution the highest values would be a bit higher than they are. 
-
-Is this a problem for our analysis? Not really. As we've discussed, linear models are robust to small violations of these assumptions, and this is only a small violation. The residuals are symmetrically distributed, with no skew, and they do at least roughly conform to a normal distribution, albeit one with somewhat skinny tails.
-
-Finally, if you're wondering what the numbers on the plots are, R labels the three most extreme residuals on each plot with their index number. This is helpful and makes it easy to identify them if you need to do anything further.
-
-## Exercise: diagnostics for the leaf mass ANOVA
-
-The first thing to do is to plot our two diagnostic plots for your fitted ANOVA on leaf mass.
-
-```{r diagnostics, exercise = TRUE, exercise.cap = "Diagnostics", exercise.lines = 5, exercise.setup = "prepare-anova" }
-
-
-```
-
-```{r diagnostics-hint-1}
-# You can use the code as before but substitute 
-# the name of your ANOVA object
-```
-
-```{r diagnostics-hint-2}
-# Don't forget to set par(mfrow = c(1,2))
-# to get the two plots next to each other
-```
-
-```{r diagnostics-hint-3}
-# This is the solution
-par(mfrow = c(1,2))
-
-plot(L1, which = 1:2)
-```
-
-Have a look at these plots. What do you see?
-
-```{r diagnostics-quiz, echo=FALSE}
-quiz(
-  caption = "Diagnostic plots questions",
-  question(
-    "Are the errors roughly normally distributed?",
-    answer("Yes: the points on the qq-plot are mostly on or close to the line, but there is one residual with an anomalously positive value", correct = TRUE),
-    answer("No: several of the points in the qq-plot are a long way from the line "),
-    answer("No, there is evidence that the residuals follow a skewed distribution"),
-    answer("Yes: the similar amounts of dispersion in the residuals versus fitted values plot indicates normal errors")
-    ),
-  question("Are the variances of the groups different enough to cause concern?",
-    answer("Yes: the variance is clearly increasing with increasing fitted values"),
-    answer("No: the points on the qq-plot are mostly on or close to the line, but there is one residual with an anomalously positive value"),
-    answer("Yes: smaller fitted values are clearly associated with more dispersion in the residuals"),
-    answer("No: the amount of dispersion in the residuals is roughly equal between groups, but there is one residual with an anomalously high value", correct = TRUE)
-  )
-)
-```
-
-<details><summary>**Click here for more on the diagnostics**</summary>
-
-As you've probably seen the diagnostics for the leaf mass model are mostly well behaved, but there is one data point (30) which has an anomalously high positive residual - it seems to be sufficiently different from the others that we should maybe take a closer look. This point is in fact one of the "outliers" that showed up in the boxplot of these data that we looked at before and it was suggested that it wasn't sufficiently different from the rest of the data to justify exclusion. Now that we have this further evidence from the diagnostic plots, however, we might want to look rather more closely at whether this particular point is having any substantial effect on the conclusions from the ANOVA. We can refit our ANOVA with the data point removed by using the subset argument.
-
-```{r}
-L2 <- lm(leaf_mass ~ inoculum, data = ragwort, subset = -30)
-
-summary(L2)
-```
-The ANOVA is still highly significant (the last row of the summary gives the F-statistic from the ANOVA table) but have the other details changed? Let's compare it with the coefficients table for previous model.
-
-```{r echo = FALSE}
-L1 <- lm(leaf_mass ~ inoculum, data = ragwort)
-```
-
-
-```{r}
-summary(L1)
-```
-In general the new model is a somewhat better fit all round: the R-squared values are higher, the F-statistic is larger and the marginal p-values in the coefficients table are smaller. The marginal p-value for the contrast between the 5µm and the 0.2µm treatment has also changed from 0.323, nowhere near statistical significance, to 0.0731, making this contrast now close to significance. What to do? This single data point is having some effect on our conclusions and our confidence in the patterns in these data so should we just remove it and present the analysis without it? Different people might give you different answers here but your author's opinion is no:  unless there is further, independent evidence that indicates a potential problem with this data point (e.g. was it noted during the experiment as being different from the rest? Was it accidentally given extra water? Was it left in a better lit position than the others for some reason) there is still no good reason to exclude it. The best thing to do is just to note in our report that there is one data point which is rather influential and that exclusion of it leads to a somewhat different result, giving us less confidence in whether there is a difference between two of the treatments or not. This way we present the reader with as much information about how certain or uncertain we are about the patterns in our data as we can and let them make up their own mind.
-
-</details>
