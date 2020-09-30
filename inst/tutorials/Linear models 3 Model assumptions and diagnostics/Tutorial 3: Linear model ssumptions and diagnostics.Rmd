@@ -28,7 +28,7 @@ gabon <- read.csv("https://github.com/rjknell/Linear_models/raw/master/data/Koer
 
 ## ANOVA and Regression diagnostics
 
-Not all data are suitable for analysis with linear models. The way the analysis is calculated is based on a number of assumptions about the distribution of the data and if these are not met then the conclusions from the analysis can be incorrect. This video introduces the important concepts about linear model assumptions and describes how to test these using the *diagnostic plots* that R can produce for you if you've fitted a linear model to your data.
+Not all data are suitable for analysis with linear models. The way the analysis is calculated is based on a number of assumptions about the distribution of the data and if these are not met then the conclusions from the analysis can be incorrect. This video introduces the important concepts about linear model assumptions and describes how to test these using the *diagnostic plots* that R can produce for you if you've fitted a linear model to your data. It's a bit long (sorry) so feel free to pause it and make a cup of tea as many times as you like.
 
 ![](https://youtu.be/zDD0RoZhMZ4)
 
@@ -103,7 +103,7 @@ print(anova(R1))
 ```
 We have a significant effect of the `inoculum` factor here as well, indicating that at least one mean is significantly different from at least one other mean.
 
-The first thing to do is to plot the two diagnostic plots for your fitted ANOVA on leaf mass.
+See if you can plot the two diagnostic plots for your fitted ANOVA on leaf mass.
 
 ```{r root_anova_setup, echo = FALSE}
 # Calculate ANOVA and save fitted model to object R1

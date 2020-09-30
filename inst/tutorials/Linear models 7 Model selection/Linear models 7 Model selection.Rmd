@@ -1,0 +1,23 @@
+---
+title: "Linear models 7: Model selection"
+output: 
+  learnr::tutorial:
+    progressive: false
+    theme: cerulean
+    highlight: textmate
+    css: css/test.css
+    code_folding: hide
+runtime: shiny_prerendered
+author: Rob Knell
+description: >
+  When there are multiple potentially important explanatory variables there are many possible models that we could fit to our data. How do we choose an appropriate set of models, and how do we select the best ones? 
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(ggplot2)
+library(RColorBrewer)
+
+knitr::opts_chunk$set(echo = TRUE, comment = NA, message = FALSE, fig.width = 5, fig.height = 5)
+```
+
