@@ -2,11 +2,8 @@
 title: "Linear models 4: Multi-factor ANOVA"
 output: 
   learnr::tutorial:
-    progressive: false
-    theme: cerulean
-    highlight: textmate
+    theme: lumen
     css: css/test.css
-    code_folding: hide
 runtime: shiny_prerendered
 author: Rob Knell
 description: >
@@ -52,7 +49,9 @@ In this tutorial we'll look at analysing linear models with more than one factor
 
 ## Two-factor linear model example
 
-The data we'll be looking at here come from a study on the effect that paternal exposure to nicotine has on the behaviour of their descendants, as published by McCarthy and co-authors in 2018^1^. The dataset we will use is a small subset of what was presented in their paper, and deals with  the spontaneous locomotor activity that the F1 offspring of nicotine exposed or control males mated with unexposed females exhibited over a 12 hour period. Locomotor activity was measured by placing the animals in a testing chamber with a series of infra-red beams arranged in a grid, and each time a beam was broken this was logged as a single locomotory event. Our dataset includes data from both male and female F1 offspring.
+The data we'll be looking at here come from a study on the effect that paternal exposure to nicotine has on mice, looking particularly at the behaviour of their descendants, as published by McCarthy and co-authors in 2018^1^. The dataset we will use is a small subset of what was presented in their paper, and deals with  the spontaneous locomotor activity that the F1 offspring of nicotine exposed or control males mated with unexposed females exhibited over a 12 hour period. Locomotor activity was measured by placing the animals in a testing chamber with a series of infra-red beams arranged in a grid, and each time a beam was broken this was logged as a single locomotory event. Our dataset includes data from both male and female F1 offspring.
+
+<br>
 
 Let's load it from github and check its structure.
 
@@ -66,11 +65,15 @@ mouse_movement <-
 
 str(mouse_movement)
 ```
+
 Because we specified `stringsAsFactors = TRUE` as an argument both `Treatment` and `Sex`have been imported as factors. `SLA` (Spontaneous Locomotory Activity) is our response variable and is the count of all the recorded times an infra-red beam was broken during the 12-hour period. `Sex` is the sex of the F1 mouse in question, and `Treatment` is the treatment the father of the mouse was exposed to: "water" where the mouse was given plain drinking water and "nicotine" where the mouse was given drinking water containing 200µg/mL nicotine for 12 weeks. Let's look at our sample sizes for each factor combination.
+
+<br>
 
 ```{r}
 table(mouse_movement$Sex:mouse_movement$Treatment)
 ```
+
 
 The data are somewhat unbalanced, with sample sizes ranging from 11 to 18 and overall rather more data for the controls whose fathers were given water but there's no combination with a really small or large sample size by comparison to the others. Now let's vsualise these data with a boxplot.
 
@@ -82,7 +85,7 @@ boxplot(SLA ~  Treatment * Sex,
         ylab = "SLA(movements/12h)")
 ```
 
-Looking at this we can see some patterns: spontaous movement rates seem more common in females and in animals with fathers exposed to nicotine, but as always we need to do some statistics to give us an idea of how confident we can be that thses patterns aren't just a consequence of sampling error. The boxplots are also at least approximately symmetrical which tells us that these data aren't strongly skewed. Ther do seem to be some differences in variance between the groups such that the mice with fathers exposed to nicotine have rather wider IQRs than those whose fathers were given plain water. It's not 100% clear how severe this is but we should keep an eye out for evidence of heterogeneous variances when we look at our diagnostic plots.
+Looking at this we can see some patterns: spontaneous movement rates seem higher in females and in animals with fathers exposed to nicotine, but as always we need to do some statistics to give us an idea of how confident we can be that thses patterns aren't just a consequence of sampling error. The boxplots are also at least approximately symmetrical which tells us that these data aren't strongly skewed. There do, however, seem to be some differences in variance between the groups such that the mice with fathers exposed to nicotine have rather wider IQRs than those whose fathers were given plain water. It's not 100% clear how severe this is but we should keep an eye out for evidence of heterogeneous variances when we look at our diagnostic plots.
 
 Fitting linear models with multiple explanatory variables in R simply involves adding new elements to the formula that is the first argument of the `lm()` function.
 
@@ -94,11 +97,17 @@ Fitting linear models with multiple explanatory variables in R simply involves a
 
 `SLA ~ Treatment * Sex` will, in this case, fit the same model as the previous example. The asterisk `*` means "fit all the main effects and also all the interactions. Here there can only be one interaction because there are only two explanatory factors. If there were a third factor, however, for example `Diet` (good or bad) then
 
+<br>
+If we were to want to add a third variable (e.g.Diet) we could do it like this:
+<br>
+
 `SLA ~ Treatment*Sex*Diet` would fit all three main effects, the two-way interactions between `Treatment` and `Sex`, between `Treatment` and `Diet` and between `Diet` and `Sex`, and also the three-way interaction between `Treatment`, `Sex` and `Diet`.
 
 `SLA ~ Treatment + Sex + Diet + Treatment:Sex + Treatment:Diet` will fit all three main effects plus two interaction terms only, namely those between `Treatment` and `Sex` and between `Treatment` and our fictional `Diet` factor.
 
-Let's fit a model with both main effects and the interaction, and then bring up an ANOVA table to get an idea of the statistical significance of our explanatory variables.
+<br>
+
+We'll fit a model with both main effects and the interaction, and then bring up an ANOVA table to get an idea of the statistical significance of our explanatory variables.
 
 ```{r eval = FALSE}
 mouse1 <- lm(SLA ~ Treatment * Sex, data = mouse_movement)
@@ -112,19 +121,23 @@ mouse1 <- lm(SLA ~ Treatment * Sex, data = mouse_movement)
 print(anova(mouse1))
 ```
 
-The basic structure here is familiar from the single factor ANOVA tutorial. Instead of simply partitioning the variance into that explained by the treatment and the remaining, error variance, however, we have now partitioned it into that explained by the two main effects of `Treatment` and `Sex`, plus a further sum of squares etc. for the interaction between the two and then the error variance (which R calls the `Residuals` of course). The various elements such as the Mean square values and the F-statistics are calculated in the same way as for any other linear model, so MS Sex  = SS Sex (253190901) divided by df Sex (1), and F for Sex is MS Sex/MS Residuals (or error) = 253190901/19714072 = 12.84316 on 1 and 50 df which is highly significant (p = 0.000767).
+The basic structure here is familiar from the single factor ANOVA tutorial. Instead of simply partitioning the variance into that explained by the treatment and the remaining, error variance, however, we have now partitioned it into that explained by the two main effects of `Treatment` and `Sex`, plus a further sum of squares etc. for the interaction between the two and then the error variance (which R calls the `Residuals` of course). 
+
+The various elements such as the Mean square values and the F-statistics are calculated in the same way as for any other linear model, so MS Sex  = SS Sex (253190901) divided by df Sex (1), and F for Sex is MS Sex/MS Residuals (or error) = 253190901/19714072 = 12.84316 on 1 and 50 df which is highly significant (p = 0.000767). Before we go further with interpreting this model, of course, we should make sure that the data are well behaved and the model is a good fit. 
+
+<br><br><hr>
 
 1: McCarthy, D.M., Morgan, T.J., Jr, Lowe, S.E., Williamson, M.J., Spencer, T.J., Biederman, J. & Bhide, P.G. (2018) Nicotine exposure of male mice produces behavioral impairment in multiple generations of descendants. PLoS biology, 16, e2006497.
 
 ## Model diagnostics
 
-Before we go any further with interpreting this model, however, we should check our diagnostic plots to make sure that the assumptions that we make about our data are met, or at least are approximately met.
+Every time you fit a linear model you should check your diagnostic plots to make sure that the assumptions that we make about our data are met, or at least are approximately met. Let's do that for our example.
 
 ```{r}
 plot(mouse1, which = 1:2)
 ```
 
-The residuals versus fitted values plot shows little to concern us. The differences in variance between groups that we saw in the boxplot earlier aare there but overall these are not of the degree of magnitude that might cause us serious concern. The qq plot is a bit odd with some deviation from the line of equality but most of the deviations aren't too major. There are some datapoints that have high residual values (6, 48, 38) but again these are not enough to really cause a lot of concern. It's a bit of a judgement call in this case but it's most likely OK. We can do a further check by drawing a histogram of the residuals.
+The residuals versus fitted values plot shows little to concern us. The differences in variance between groups that we saw in the boxplot earlier are there but overall these are not of the degree of magnitude that might cause us serious concern. The qq plot is a bit odd with some deviation from the line of equality but most of the deviations aren't too major. There are some datapoints that have high residual values (6, 48, 38) but again these are not enough to really cause a lot of concern. It's a bit of a judgement call in this case but it's most likely OK. We can do a further check by drawing a histogram of the residuals.
 
 ```{r}
 hist(mouse1$residuals)
@@ -148,6 +161,7 @@ anova(mouse1)
 print(anova(mouse1))
 ```
 
+<br>
 Here's the ANOVA table for the model with the explanatory variables in the opposite order.
 
 ```{r eval = FALSE}
@@ -176,7 +190,7 @@ There are two options for calculating significance using type III sums of square
 drop1(mouse1, test = "F")
 ```
 
-Two things to note here are 1) the p-value here is the same as the one form the ANOVA table. This is because the interaction term is entered last in the model anyway. If there were other explanatory variables which were not included in the interaction term we would also get deletion tests for these, however, and they wold be different. 2) As we will discuss later, if there is an interaction then the p-values for the main effects included in the interaction term are fairly meaningless, so in this case the p-value for the interaction term only is arguably the only appropriate one to look at.
+Two things to note here are 1) the p-value here is the same as the one from the ANOVA table. This is because the interaction term is entered last in the model anyway. If there were other explanatory variables which were not included in the interaction term we would also get deletion tests for these, however, and they wold be different. 2) As we will discuss later, if there is an interaction then the p-values for the main effects included in the interaction term are fairly meaningless, so in this case the p-value for the interaction term only is arguably the only appropriate one to look at.
 
 For the second option, we can use the `Anova()` function from the `car` package. Note that this function has a capital A to distinguish it clearly and straightforwardly from the `anova()` function we've already used. What could possibly go wrong?
 
@@ -210,11 +224,13 @@ print(Anova(mouse3, type = "III"))
 
 Our main effects remain statistically significant in the new reduced model. Now that we have a fitted model and we're happy with our understanding of the signficance of the various terms, let's think about interpreting it.
 
-## Interpreting the fitted model
+## `summary()` output for two-factor ANOVA
 
-Let's look at the `summary()` output for our model. You might want to have a look at the video on interpreting this output for ANOVA type models.
+To interpret our model we'll need to use the coefficients table from the model summary. This video explains these work. You've possibly already watched the first 11 minutes in the single factor ANOVA tutorial --- the rest of the video extends this to two-factor ANOVA. There's quite a lot of it so maybe get a cup of tea.
 
-VIDEO
+![](https://youtu.be/3Y2vQIm3oVQ)
+
+## `summary()` output for our model
 
 ```{r}
 summary(mouse3)

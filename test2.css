@@ -1,0 +1,18 @@
+
+h1 {
+  color: red;
+}
+
+h2 {
+  color: darkgreen;
+}
+
+pre {
+  color: black;
+}
+
+code {
+  color: #004080;
+  background-color: #ffffff;
+  font-size: 110%;
+}

@@ -2,11 +2,8 @@
 title: "Linear models 1: Single-factor ANOVA"
 output: 
   learnr::tutorial:
-    progressive: false
-    theme: cerulean
-    highlight: pygments
-    css: css/test.css
-    code_folding: hide
+    theme: lumen
+    css: css/test2.css
 runtime: shiny_prerendered
 author: Rob Knell
 description: >
@@ -295,9 +292,9 @@ This is consistent with what the Tukey test is telling us: you can see that mean
 
 ### Using the estimated model coefficients
 
-A second option for interpreting a significant ANOVA is perhaps a little less satisfying if you want to have rigid rules about where the differences lie, but it also has some advantages over the post-hoc test we looked at above. This involves looking at the differences between means as estimated in the process of fitting the ANOVA --- the *model coefficients*. These, and some other information can be viewed by using the `summary()` function on our `R1` object. The output you get from R when you do this is not intuitively easy but is hopefully explained in this video:
+A second option for interpreting a significant ANOVA is perhaps a little less satisfying if you want to have rigid rules about where the differences lie, but it also has some advantages over the post-hoc test we looked at above. This involves looking at the differences between means as estimated in the process of fitting the ANOVA --- the *model coefficients*. These, and some other information can be viewed by using the `summary()` function on our `R1` object. The output you get from R when you do this is not intuitively easy but is hopefully explained in the following video. The video deals with some more complex cases as well but for the moment ignore these: just watch the first 11 minutes.
 
-VIDEO
+![](https://youtu.be/3Y2vQIm3oVQ)
 
 
 ```{r}
