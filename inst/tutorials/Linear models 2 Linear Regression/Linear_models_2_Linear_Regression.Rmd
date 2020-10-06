@@ -2,11 +2,8 @@
 title: "Linear models 2: Linear Regression"
 output: 
   learnr::tutorial:
-    progressive: false
-    theme: cerulean
-    highlight: pygments
-    css: css/test.css
-    code_folding: hide
+    theme: lumen
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
 runtime: shiny_prerendered
 author: Rob Knell
 description: >

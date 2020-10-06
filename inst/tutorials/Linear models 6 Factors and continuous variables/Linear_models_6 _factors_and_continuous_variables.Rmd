@@ -2,11 +2,8 @@
 title: "Linear models 6: Factors and continuous variables"
 output: 
   learnr::tutorial:
-    progressive: false
-    theme: cerulean
-    highlight: textmate
-    css: css/test.css
-    code_folding: hide
+    theme: lumen
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
 runtime: shiny_prerendered
 author: Rob Knell
 description: >
@@ -41,18 +38,22 @@ You should now be starting to feel familiar with fitting linear models with mult
 
 Let's start with an fairly straightforward example. This comes from a study of brain size and mating type in pinnipeds (seals, sealions and walruses) published in 2012 by John Fitzpatrick and coauthors^1^. As part of a study of how mating system might impact on the evolution of brain and body size, Fitzpatrick *et al.* collected data on brain and body size and mating system for males and females from 33 species of pinniped. The data are available on github as a .csv file at <https://github.com/rjknell/Linear_models/raw/master/data/Pinniped_brains.csv>. Start by importing the data and saving it as an object called `pinnipeds`, and then checking the import with the `str()` function.
 
-```{r pinniped_import, exercise=TRUE}
+```{r pinniped_import, exercise = TRUE}
+
 ```
+
 
 ```{r pinniped_import-hint-1}
 # You need to use the read.csv() function
 # to import the data.
 ```
 
+
 ```{r pinniped_import-hint-2}
 # Don't forget to put the file path (in this
 # case the URL) in quote marks
 ```
+
 
 ```{r pinniped_import-hint-3}
 # This is the solution

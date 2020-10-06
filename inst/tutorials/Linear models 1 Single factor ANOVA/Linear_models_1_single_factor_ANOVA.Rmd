@@ -3,6 +3,7 @@ title: "Linear models 1: Single-factor ANOVA"
 output: 
   learnr::tutorial:
     theme: lumen
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
 runtime: shiny_prerendered
 author: Rob Knell
 description: >
@@ -21,25 +22,7 @@ ragwort <-
   )
 ```
 
-```{css echo = FALSE}
-h1 {
-  color: #336699;
-}
 
-h2 {
-  color: darkgreen;
-}
-
-pre {
-  color: black;
-}
-
-code {
-  color: #004080;
-  background-color: #ffffff;
-  font-size: 105%;
-}
-```
 
 ## Linear models introduction
 

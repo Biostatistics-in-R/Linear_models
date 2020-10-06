@@ -3,7 +3,7 @@ title: "Linear models 4: Multi-factor ANOVA"
 output: 
   learnr::tutorial:
     theme: lumen
-    css: css/test.css
+    css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
 runtime: shiny_prerendered
 author: Rob Knell
 description: >
