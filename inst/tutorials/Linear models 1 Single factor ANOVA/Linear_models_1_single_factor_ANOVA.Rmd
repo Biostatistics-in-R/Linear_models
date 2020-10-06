@@ -3,12 +3,12 @@ title: "Linear models 1: Single-factor ANOVA"
 output: 
   learnr::tutorial:
     theme: lumen
-    css: css/test2.css
 runtime: shiny_prerendered
 author: Rob Knell
 description: >
   Analysis of variance explained: how to partition variance and why this is so useful for telling us about differences between means.
 ---
+
 
 ```{r setup, include=FALSE}
 library(learnr)
@@ -19,6 +19,26 @@ ragwort <-
     "https://github.com/rjknell/Linear_models/raw/master/data/Wang_et_al_plant_only.csv",
     stringsAsFactors = TRUE
   )
+```
+
+```{css echo = FALSE}
+h1 {
+  color: #336699;
+}
+
+h2 {
+  color: darkgreen;
+}
+
+pre {
+  color: black;
+}
+
+code {
+  color: #004080;
+  background-color: #ffffff;
+  font-size: 105%;
+}
 ```
 
 ## Linear models introduction
@@ -68,15 +88,17 @@ Looking at these boxplots, we can be happy that the data are probably reasonably
 
 When we come to think about the differences between groups, however, it's hard to say much with certainty: the 1000µm treatment has the lowest median and the 5µm treatment the highest, but there's a lot of overlap between them when we look at the interquartile ranges, and overall it's hard to say anything with much confidence about effects of the different filter sizes on root mass. A statistical test of the differences between the means would be helpful. We could use a t-test to compare each mean with each other mean, but that would give us a total of 6 tests and, because of the large number of tests, an overall type 1 error rate of 0.26, or 26%. This would mean that we would be quite likely to find at least one significant effect that was in fact simply a consequence of sampling error. What we are going to do instead is use an analysis called ANalysis Of VAriance, or ANOVA. Rather than comparing means, this relies on something called *partitioning variance* to detect whether there are differences between means. 
 
+## Partitioning variance
+
 This video explains what is meant by partitioning variance:
 
 ![](https://youtu.be/qh66ScABeM0)
 
-### Generating an ANOVA table
+## Generating an ANOVA table
 
-Just partitioning variance deosn't answer any questions about these data --- we want to know if there is a significant difference between our means. To do this we need to take our partitioned data and use it to carry out an ANalysis Of VAriance.
+Just partitioning variance doesn't answer any questions about these data --- we want to know if there is a significant difference between our means. To do this we need to take our partitioned data and use it to carry out an ANalysis Of VAriance.
 
-VIDEO
+![](https://youtu.be/9xyve87BJjk)
 
 In the video you saw how to calculate the total, error and treatment sums of squares from first principles and how to put those together in an ANOVA table. In R there are two functions that will do this for you, one is `aov()` and the other is `lm()`. `lm()` stands for linear model and refers to the fact that the analysis we're looking at here is in fact one component of the larger family of analyses which are collectively referred to as linear models. `aov()` is very similar to `lm()` but gives its output in a slightly different way. We'll just use `lm()` here because we'll be going on to use it much more with a variety of different analyses.
 
