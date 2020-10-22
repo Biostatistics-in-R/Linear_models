@@ -478,7 +478,7 @@ Six of these are from the genus *Phoca*, and all of these have monogynous males.
 
 In many species of animal one sex (usually the male, but not always) carries weapons such as horns, enlarged mandibles or similar which are used in contests with other animals from the same species. These weapons are often extremely variable in size between individuals, and an interesting question is why this should be and how the growth of these weapons is regulated. In 2019 a team of scientists based in Japan and the USA^2^ published the results of an in-depth study on the regulation of weapon size in a beetle called the broad-horned flour beetle, *Gnatocerus cornutus*. Males of this species have enlarged mandibles which they use in fights with other males to gain access to females. There is considerable variation in the length of these mandibles, much of which is known to be associated with the diet of the males during development.
 
-<br> ![](https://github.com/rjknell/Linear_models/raw/master/inst/tutorials/Linear models 5 Factors and continuous variables/G_cornutus.jpg){width="500"}
+<br> ![](https://github.com/rjknell/Linear_models/raw/master/inst/tutorials/Linear%20models%206%20Factors%20and%20continuous%20variables/G_cornutus.jpg){width="500"}
 
 Male *Gnatocerus cornutus* showing enlarged mandibles. Photo by Udo Schmidt, released under a [Creative Commons Attribution-ShareAlike license](https://creativecommons.org/licenses/by-sa/2.0/).
 
@@ -832,7 +832,7 @@ What our model is telling us is that the 1ILP treatment has a strong effect on m
 
 ## Visualising the model output using ggplot
 
-We could visualise the model output by just plotting the fitted lines onto a scatterplot using `abline()` or by using `predict()` to generate fitted values and confidence intervals. There is a much easier way, however, which is to use ggplot2. This graphics package is very good at pltting graphs with multiple factor levels visualised, and it would be silly not to at least show you how to do it in this case. WE;re not going to go through it in detail because that would take a ot of explanation, but if you want to know more there are a lot of useful resources available on how to use ggplot2 - Winston Chang's [R Graphics Cookbook](https://r-graphics.org/) is very good in my opinion.
+We could visualise the model output by just plotting the fitted lines onto a scatterplot using `abline()` or by using `predict()` to generate fitted values and confidence intervals. There is a much easier way, however, which is to use ggplot2. This graphics package is very good at pltting graphs with multiple factor levels visualised, and it would be silly not to at least show you how to do it in this case. We;re not going to go through it in detail because that would take a ot of explanation, but if you want to know more there are a lot of useful resources available on how to use ggplot2 - Winston Chang's [R Graphics Cookbook](https://r-graphics.org/) is very good in my opinion.
 
 To visualise our data with lines fitted for each level of treatment using ggplot2 we can just use this code. We could have plotted the confidence intervals for each line in as well but with more than a few lines this just makes a mess.
 
