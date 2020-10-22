@@ -1,7 +1,8 @@
 # Linear models
-Learnr tutorials for linear model fitting and interpretation
+A series of learnr tutorials for linear model fitting and interpretation. These were written in learnr to teach MSc students the fundamentals of using linear mdoels to analyse their data. I'm making these avilable for anyone who wants to use them. They can be compiled easily into an R package in RStudio which means that, if a recent release of RStudio is used, they will appear in the "tutorials" pane when the package is loaded.
+
+This work is licensed under a [Creative Commons Attribution-NonCommercial 4.0 International License](https://creativecommons.org/licenses/by-nc/4.0/).
 
 Authored by Rob Knell
 
-<br><br><hr>
-<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons Licence" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
+
