@@ -2,7 +2,7 @@
 title: "Linear models 4: Multi-factor ANOVA"
 output: 
   learnr::tutorial:
-    theme: lumen
+    theme: default
     css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
 runtime: shiny_prerendered
 author: Rob Knell
@@ -31,7 +31,7 @@ bacteria1 <- subset(bacteria, Line ==1)
 
 ## Adding extra variables to a linear model
 
-So far we've seen how the linear model can cope with both factors and continuous variables as explanatory variables, and that the way that variance is partitioned for both types of explanatory variable is fundamentally the same. Linear models can also cope with more than one explanatory variable, so you can analyse the effect of several different things that might influence your variable of interest at the same time. This has some important benefits over analysing each explanatory variable's effect separately:
+So far we've seen how the linear model can cope with both factors and continuous variables as explanatory variables, and that the way that variance is partitioned for both types of explanatory variable is fundamentally the same. Linear models can also cope with more than one explanatory variable: so for two variables the variance explained by the first variable is partitioned as before, giving  us the treatment variance for variable 1, and the error variance. The error variance is then further partitioned into the treatment variance that is accounted for by the second variable, leaving the final error variance. This allows us to analyse the effect of several different things that might influence your variable of interest at the same time, giving some important benefits over analysing each explanatory variable's effect separately:
 
 * Fitting a single model reduces the number of statistical tests which we need to do, reducing the probability of type 1 errors.
 
@@ -40,10 +40,6 @@ So far we've seen how the linear model can cope with both factors and continuous
 * We can statistically control for variables if we wish to: so in a study with height and weight as explanatory variables we can ask the question "What is the effect of weight when height has been taken into account?" --- in other words, what is the effect of an individual being heavier or lighter than would be expected for someone of that height.
 
 * We can look for *interactions* between explanatory variables which arise when the effect of one variable depends on the level of the other.
-
-This video explains how the variance is partitioned when there is more than one explanatory factor and what some of the consequences of this are.
-
-VIDEO
 
 In this tutorial we'll look at analysing linear models with more than one factor as the explanatory variables. These linear models are often called "multi-factor ANOVA" or you might see them called a "two-way ANOVA" or similar depending on the number of explanatory factors used.
 
@@ -66,7 +62,7 @@ mouse_movement <-
 str(mouse_movement)
 ```
 
-Because we specified `stringsAsFactors = TRUE` as an argument both `Treatment` and `Sex`have been imported as factors. `SLA` (Spontaneous Locomotory Activity) is our response variable and is the count of all the recorded times an infra-red beam was broken during the 12-hour period. `Sex` is the sex of the F1 mouse in question, and `Treatment` is the treatment the father of the mouse was exposed to: "water" where the mouse was given plain drinking water and "nicotine" where the mouse was given drinking water containing 200µg/mL nicotine for 12 weeks. Let's look at our sample sizes for each factor combination.
+Because we specified `stringsAsFactors = TRUE` as an argument to `read.csv()` both `Treatment` and `Sex`have been imported as factors. `SLA` (Spontaneous Locomotory Activity) is our response variable and is the count of all the recorded times an infra-red beam was broken during the 12-hour period. `Sex` is the sex of the F1 mouse in question, and `Treatment` is the treatment the father of the mouse was exposed to: "Water" if the mouse was given plain drinking water and "Nicotine" if the mouse was given drinking water containing 200µg/mL nicotine for 12 weeks. Let's look at our sample sizes for each factor combination.
 
 <br>
 
@@ -75,7 +71,7 @@ table(mouse_movement$Sex:mouse_movement$Treatment)
 ```
 
 
-The data are somewhat unbalanced, with sample sizes ranging from 11 to 18 and overall rather more data for the controls whose fathers were given water but there's no combination with a really small or large sample size by comparison to the others. Now let's vsualise these data with a boxplot.
+The data are somewhat unbalanced, with sample sizes ranging from 11 to 18 and overall rather more data for the controls whose fathers were given water. Nonetheless there's no combination with a really small or large sample size by comparison to the others (i.e. no combination with 3, or 300). Now let's visualise these data with a boxplot.
 
 ```{r fig.cap = "**Figure 1.** Boxplot showing Spontaneous Locomotor Activity (SLA) as measured in IR beam triggers over 12 hours for mice with paternal expsoure to either nicotine or water."}
 
@@ -137,7 +133,7 @@ Every time you fit a linear model you should check your diagnostic plots to make
 plot(mouse1, which = 1:2)
 ```
 
-The residuals versus fitted values plot shows little to concern us. The differences in variance between groups that we saw in the boxplot earlier are there but overall these are not of the degree of magnitude that might cause us serious concern. The qq plot is a bit odd with some deviation from the line of equality but most of the deviations aren't too major. There are some datapoints that have high residual values (6, 48, 38) but again these are not enough to really cause a lot of concern. It's a bit of a judgement call in this case but it's most likely OK. We can do a further check by drawing a histogram of the residuals.
+The residuals versus fitted values plot shows little to concern us. The differences in variance between groups that we saw in the boxplot earlier are there but overall these are not really substantial enough to cause us serious concern. The qq plot is a bit odd with some deviation from the line of equality but most of the deviations aren't too major. There are some datapoints that have high residual values (6, 48, 38) but again these are not enough to really cause a lot of concern. It's a bit of a judgement call in this case but it's most likely OK. We can do a further check by drawing a histogram of the residuals.
 
 ```{r}
 hist(mouse1$residuals)
@@ -162,11 +158,11 @@ print(anova(mouse1))
 ```
 
 <br>
-Here's the ANOVA table for the model with the explanatory variables in the opposite order.
+Here's the ANOVA table for the model with the explanatory variables in the opposite order --- so `Sex * Treatment` instead of `Treatment * Sex`.
 
 ```{r eval = FALSE}
 # Fit model with Sex first instead of treatment
-mouse2 <- lm(SLA ~ Sex *Treatment, data = mouse_movement)
+mouse2 <- lm(SLA ~ Sex * Treatment, data = mouse_movement)
 
 # ANOVA table for second model
 anova(mouse2)
@@ -180,7 +176,7 @@ mouse2 <- lm(SLA ~ Sex *Treatment, data = mouse_movement)
 print(anova(mouse2))
 ```
 
-The statistics for the two main effects change depending on whether their order in the formula. When treatment is first we have F~1,50~ = 15.44, p = 0.000262, but when treatment is the second factor in the model we have F~1,50~ = 13.79, p = 0.000516. This is a consequence of the way that a linear model is fitted: as explained in the video at the start of the tutorial the first term is based on the sum of squares etc. calculated from the raw data, but for the second term the sum of squares etc. is calculated using the residual sum of squares once the sum of squares for the first term has been removed. This method of calculating the sums of squares is called *type I sums of squares* or sometimes *sequential sums of squares*, and is why the SS, MS, F-statistic and p-value can change depending on the order of the terms in the model --- this will happen so long as there is any kind of correlation between the explanatory variables, and even when the explanatory variables are factors this will happen unless the design is perfectly balanced, with equal sample sizes for every combination of treatments.
+The statistics for the two main effects change depending on whether their order in the formula. When treatment is first we have F~1,50~ = 15.44, p = 0.000262, but when treatment is the second factor in the model we have F~1,50~ = 13.79, p = 0.000516. This is a consequence of the way that a linear model is fitted: as explained at the start of the tutorial the first term is based on the sum of squares calculated from the raw data, but for the second term the sum of squares is calculated using the error sum of squares once the sum of squares for the first term has been removed. This method of calculating the sums of squares is called *type I sums of squares* or sometimes *sequential sums of squares*, and is why the SS, MS, F-statistic and p-value can change depending on the order of the terms in the model --- this will happen so long as there is any kind of correlation between the explanatory variables, and even when the explanatory variables are factors this will happen unless the design is perfectly balanced, with exactly equal sample sizes for every combination of treatments.
 
 Do we need to worry about this here? Maybe. One option is to use something called the *type III sums of squares* --- a different way of calculating the sums of squares which treats every term as if it were the last term entered into a model, so in this case the SS for Sex is calculated based on data which has already had the SS for Treatment and for the interaction partitioned out, and the SS for Treatment is calculated based on data which has already had the SS for Sex and for the interaction partitioned out. Some statistical software (e.g. SAS) uses these type III sums of squares by default, so if your analysis is giving a different result from one done with different software then this is worth bearing in mind as a possible explanation. There are also type II sums of squares but these only work in models where there is no interaction term.
 
@@ -190,7 +186,7 @@ There are two options for calculating significance using type III sums of square
 drop1(mouse1, test = "F")
 ```
 
-Two things to note here are 1) the p-value here is the same as the one from the ANOVA table. This is because the interaction term is entered last in the model anyway. If there were other explanatory variables which were not included in the interaction term we would also get deletion tests for these, however, and they wold be different. 2) As we will discuss later, if there is an interaction then the p-values for the main effects included in the interaction term are fairly meaningless, so in this case the p-value for the interaction term only is arguably the only appropriate one to look at.
+Two things to note here are 1) the p-value here is the same as the one from the ANOVA table. This is because the interaction term is entered last in the model anyway. If there were other explanatory variables which were not included in the interaction term we would also get deletion tests for these, however, and they would be different. 2) As we will discuss later, if there is an interaction then the p-values for the main effects included in the interaction term are fairly meaningless, so in this case the p-value for the interaction term only is arguably the only appropriate one to look at.
 
 For the second option, we can use the `Anova()` function from the `car` package. Note that this function has a capital A to distinguish it clearly and straightforwardly from the `anova()` function we've already used. What could possibly go wrong?
 
@@ -208,7 +204,7 @@ print(Anova(mouse1, type = "III"))
 
 This supports what we've already calculated using the type I sums which are the default option in R: both main effects are significant but the interaction term is non-significant.
 
-Since the interaction is very far from significant, and there's nothing to indicate that there is an important interaction effect here, we can consider generating a new and more parsimonious model without the interaction term. There is more in the tutorial on model selection on the reasoning behind this and when it might or might not be justified.
+Since the interaction is very far from significant, and there's nothing to indicate that there is an important interaction effect here, we can consider generating a new and more parsimonious model without the interaction term. There is more in the upcoming tutorial on model selection on the reasoning behind this and when it might or might not be justified.
 
 ```{r eval = FALSE}
 mouse3 <- lm(SLA ~ Treatment + Sex, data = mouse_movement)
@@ -228,7 +224,7 @@ Our main effects remain statistically significant in the new reduced model. Now 
 
 To interpret our model we'll need to use the coefficients table from the model summary. This video explains these work. You've possibly already watched the first 11 minutes in the single factor ANOVA tutorial --- the rest of the video extends this to two-factor ANOVA. There's quite a lot of it so maybe get a cup of tea.
 
-![](https://youtu.be/3Y2vQIm3oVQ)
+![](https://youtu.be/CS5ogBL-MHo)
 
 ## `summary()` output for our model
 
@@ -357,7 +353,7 @@ axis(
 
 ## Exercise: multi-factor ANOVA 
 
-Here, we will use some data from a study on bacterial adaptation to host gut environments originally published in 2018 by a group of researchers at The University of Eugene, Oregon and the Canadian Institute for Advanced Research^2^. They looked, among other things, at the competitive ability a bacterium called *Aeromonas veronii* after either 4 or 18 passages through the gut of an otherwise germ-free larval zebrafish. Competitive ability was measured *in vivo* by incoulating a larval zebrafish with a dose of both the experimental line of bacteria and an ancestral ine which was tagged with Green Flourescent Protein for 3 days, following which the gut contents were homogenised and the homogenate plated onto tryptone soy agar. After a suitable incubation period the colonies of each strain were counted using a flourescence microscope to distinguish them and a "competitive index" calculated as the ratio of the number of colonies for the adapted line to the colonies from the ancestral line.
+Here, we will use some data from a study on bacterial adaptation to host gut environments originally published in 2018 by a group of researchers at The University of Eugene, Oregon and the Canadian Institute for Advanced Research^2^. They looked, among other things, at the competitive ability a bacterium called *Aeromonas veronii* after either 4 or 18 passages through the gut of an otherwise germ-free larval zebrafish. Competitive ability was measured *in vivo* by incoulating a larval zebrafish with a dose of both the experimental line of bacteria and an ancestral line which was tagged with Green Flourescent Protein for 3 days, following which the gut contents were homogenised and the homogenate plated onto tryptone soy agar. After a suitable incubation period the colonies of each strain were counted using a flourescence microscope to distinguish them and a "competitive index" calculated as the ratio of the number of colonies for the adapted line to the colonies from the ancestral line.
 
 The particular experiment which we will look at here is one in which the experimenters compared the competitive ability of bacteria in the host strain which they had been evolving (WT hosts) with the competitive ability of the same bacteria but competing in hosts of a different genetic background (an immunodeficient *myd88~-~* mutant). They also compared the competitive abilities of bacteria which had had a short period of adaptation (4 passages) with bacteria which had a longer period (18 passages). The data are on github at this URL:
 
@@ -390,7 +386,7 @@ str(bacteria)
 ```
 
 
-The response variable is `CI` (Competitive Index) and we have three other variables: `Line`, `Host` and `Passage`. `Line` is a number from 1 to 3 and refers to the fact that the experimenters actually repeated the experiment three times with three independently evolved lines of bacteria. For the present we'll just analyse the data from line 1 but we will look at a model including this factor in the tutorial on model selection. Let's start by using `subset()` to select just the data associated with Line 2. We'll call our new data frame `bacteria1`.
+The response variable is `CI` (Competitive Index) and we have three other variables: `Line`, `Host` and `Passage`. `Line` is a number from 1 to 3 and refers to the fact that the experimenters actually repeated the experiment three times with three independently evolved lines of bacteria. For the present we'll just analyse the data from line 2 but we will look at a model including this factor in the tutorial on model selection. Let's start by using `subset()` to select just the data associated with Line 2. We'll call our new data frame `bacteria1`.
 
 ```{r}
 bacteria1 <- subset(bacteria, Line == 2)
@@ -414,7 +410,7 @@ str(bacteria1)
 
 All looks good so far. You can see that we've gone from 208 observations to 64 as is a consequence of subsetting out just one line's worth of data. There are two factors to include in our analysis. `Host` has two treatments, `WT` and `myd88` and `Passage` also has two treatments, `4` and `18`. Before we jump in and fit a model, though, we should have a look at our data. See if you can draw a boxplot of `CI` as explained by `Host` and `Passage`.
 
-```{r bacteria_boxplot, exercise = TRUE}
+```{r bacteria_boxplot, exercise = TRUE, exercise.lines = 6}
 
 ```
 
@@ -465,7 +461,7 @@ What do you see?
 
 <details><summary>**Click here for more: what to do with these data?**</summary>
 
-As you have hopefully seen, these data look like they are very positively skewed. Almost all of the data have values between zero and about 1000, but there are also some datapoints with much higher values. Given that the linear model assumes normality in the errors, or the residuals, rather than in the raw data we should be cautious about worrying about apparent violations in the raw data. In this case however, it's clear that if we were to fit a model to these data our residuals would be exceedingly skewed and also we can imagine that those extreme values would have some disproportionate effects on our fitted model. In this case we can use a data transformation to try to fix this extreme skew, with the two easy options being a square root transformation and a log transformation. Just checking:
+As you have hopefully seen, these data look like they are very positively skewed. Almost all of the data have values between zero and about 1000, but there are also some datapoints with much higher values. Given that the linear model assumes normality in the errors, or the residuals, rather than in the raw data we should be cautious about worrying about apparent violations in the raw data. In this case, however, it's clear that if we were to fit a model to these data our residuals would be exceedingly skewed and also we can imagine that those extreme values would have some disproportionate effects on our fitted model. We can use a data transformation to try to fix this extreme skew, with the two easy options being a square root transformation and a log transformation. Just checking:
 
 ```{r}
 summary(bacteria1$CI)
@@ -512,7 +508,7 @@ This is a nice illustration of the effect of the two different transformations. 
 
 ## Model fitting and diagnostics
 
-To start with we will ignore the `Line` variable so we have two explanatory factors and we'd like to fit both of these plus their interaction. Save the fitted model object as `M1`, and then check the significance of the interaction term by bringing up an ANOVA table using `anova()`. We won't worry about type I versus type III sums of squares for the moment since we're really only concerned with the significance of the interaction term. Don't forget to log the response variable and tell `lm()` that you're using data from `bacteria1`. As a consequence of some weirdness that happens with the learnr package, please enclose your `anova()` function call in a `print()` function to keep the ANOVA table formatting consistent. Sorry about this.
+We have two explanatory factors and we'd like to fit both of these plus their interaction. Save the fitted model object as `M1`, and then check the significance of the interaction term by bringing up an ANOVA table using `anova()`. We won't worry about type I versus type III sums of squares for the moment since we're really only concerned with the significance of the interaction term. Don't forget to log the response variable and tell `lm()` that you're using data from `bacteria1`. As a consequence of some weirdness that happens with the learnr package, please enclose your `anova()` function call in a `print()` function to keep the ANOVA table formatting consistent. Sorry about this.
 
 ```{r model_fit_1, exercise = TRUE}
 
@@ -601,7 +597,7 @@ question("The line labelled (Intercept) gives the estimated mean value for what?
        answer("WT Host and 4 Passages"),
        answer("WT Host and 18 Passages"),
        answer("myd88 host and 4 Passages", correct = TRUE),
-       answer("myd99 hist and 18 Passages")
+       answer("myd88 hist and 18 Passages")
 ),
 
 question("What is the estimated mean for myd88 Host and 18 Passages?",
@@ -714,7 +710,7 @@ plotmeans(
 )
 ```
 
-The x-axis is not marvellous but we can see what's going on. Let's summarise what we've got now.
+The x-axis labels are not marvellous but we can see what's going on. Let's summarise what we've got now.
 
 * When the host is myd88^-^ passage number does not significantly affect the competitive ability of the bacteria
 
@@ -734,7 +730,7 @@ M1 <- lm(log(CI) ~ Passage * Host,
 ```
 
 ```{r}
-anova(M1)
+print(anova(M1))
 ```
 
 We can see that in addition to the highly significant interaction term we have a significant main effect of Passage but not one of Host. Does that mean much? Since we know that the effect of passage number is completely dependent on the host (and *vice-versa*), is it even meaningful to talk about the statistical significance of the main effect? Most statisticians would say no --- when a main effect is also present in a model in a higher-order interaction term, as is the case here, then there is little meaning to the statistical significance of the main effect. Many researchers nowadays would not report these p-values, and would only report the significance of the interaction term since that is the only one that has much meaning.
@@ -938,3 +934,5 @@ p1 <-
 p1
 
 ```
+<br><br><hr>
+<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons Licence" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.

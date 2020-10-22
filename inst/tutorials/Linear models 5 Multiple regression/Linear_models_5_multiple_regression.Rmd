@@ -2,7 +2,7 @@
 title: "Linear models 5: Multiple Regression"
 output: 
   learnr::tutorial:
-    theme: lumen
+    theme: default
     css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
 runtime: shiny_prerendered
 author: Rob Knell
@@ -33,9 +33,9 @@ Note that some of the material here is a bit advanced and it's assumed that you'
 
 ## Exercise 1: house finch colouration and mitochondrial function
 
-The data we will analyse here come from a study published in 2019 by Geoffrey Hill of Auburn University and co-workers^1^. This research was based on the observation that many animals use visual signals with carotenoids as the pigment in question, and it's now well known that in many cases the redder the visual signal the better the signaller performs in terms of acquiring mates or competing for resources. The mechanism linking red carotenoid signalling to individual quality is not known, however, but Hill *et. al.* followed previous work which had found that many bird species ingest yellow carotenoids but then oxidise these to red pigments, probably in the mitochondria. One part of Hill *et al.*'s investigation into this involved measuring the hue of the red feathers and a series of measures of mitochindrial function in 36 male house finches *Haemorhous  mexicanus* at a time when they were moulting and therefore actively producing red carotenoids.
+The data we will analyse here come from a study published in 2019 by Geoffrey Hill of Auburn University and co-workers^1^. This research was based on the observation that many animals use visual signals with carotenoids as the pigment in question, and it's now well known that in many cases the redder the visual signal the better the signaller performs in terms of acquiring mates or competing for resources. The mechanism linking red carotenoid signalling to individual quality is not known, however, but Hill *et. al.* followed previous work which had found that many bird species ingest yellow carotenoids but then oxidise these to red pigments, probably in the mitochondria. One part of Hill *et al.*'s investigation into this involved measuring the hue of the red feathers and a series of measures of mitochondrial function in 36 male house finches *Haemorhous  mexicanus* at a time when they were moulting and therefore actively producing red carotenoids.
 
-<img src = "https://github.com/rjknell/Linear_models/raw/master/inst/tutorials/Linear%20models%204%20multiple%20regression/house_finches.jpg" width = "500">
+<img src = "https://github.com/rjknell/Linear_models/raw/master/inst/tutorials/Linear%20models%205%20Multiple%20regression/house_finches.jpg" width = "500">
 
 **Figure 1** Male and female house finches showing the sexually dimorphic red colouration of the male. Photo by Donald Willin, released under a [creative commons attribution 2.0 licence](https://creativecommons.org/licenses/by/2.0/).
 
@@ -54,7 +54,7 @@ We have `Hue` as a response variable. Higher values of `Hue` indicate yellower p
 
 As always we'll start with some exploratory graphs. In this case we'll draw scatterplots of Hue against our three measures of mitochondrial function. See if you can fill in the missing variables in this code block
 
-```{r fig.height = 10, scatterplots, exercise = TRUE}
+```{r fig.height = 10, scatterplots, exercise = TRUE, exercise.lines = 27}
 
 par(mfrow = c(3,1))
 
@@ -120,7 +120,7 @@ par(mfrow = c(1,1))
 
 Looking at these plots we can see that there might be relationships between some of these variables and the redness of the bird's plumage. Recalling that high values for `Hue` mean yellower feathers, there might be a positive relationship between Hue and PGC 1a expression, and there might be negative relationships with respiratory control ratio and mitochondrial membrane potential (meaning in the last two cases that "better" individuals with redder feathers have higher values for RCR and MMP). More usefully, there's no indication of anything that might cause problems in our analysis: no wildly implausible or potentially problematic data points and everything looks quite well behaved. One data point for MMP does seem a little low given the distribution of the others but not to the extent that we need to worry much about it. Let's fit a model. 
 
-Fill in the formula in the `lm()` function call. We want to eplxain the patterns in `Hue` and we'll fit just the main effects of `C1RCR`, `C1MMP` and `PGC_1a`: we won't test for interaction terms here.
+Fill in the formula in the `lm()` function call. We want to explain the patterns in `Hue` and we'll fit just the main effects of `C1RCR`, `C1MMP` and `PGC_1a`: we won't test for interaction terms here.
 
 
 We'll use `drop1()` to check on the significance of each explanatory variable.
@@ -143,7 +143,7 @@ M1 <- lm(Hue ~ C1RCR + C1MMP + PGC_1a, data = finch)
 drop1(M1, test = "F")
 ```
 
-According to our deletion test two of our three explanatory variables have statistically significant effects on the redness of the finch's feathers. The third, mitochondrial membrane potential, does not. Depending on our opinoin of the various arguments surrounding different model selection techniques, we could potentially choose to remove this non-significant term from our model to give us a *minimal adequate model* to describe the patterns in these data (see the tutorial on model selection for more on this). Since `C1MMP` is not a variable which we have introduced into the model to allow us to control for an effect, and it is not a variable that is in the model because it represents some important element of experimental design (e.g. if the design were a blocked one we should include `block` as a factor) we can argue that removing it is justified. 
+According to our deletion test two of our three explanatory variables have statistically significant effects on the redness of the finch's feathers. The third, mitochondrial membrane potential, does not. Depending on our opinion of the various arguments surrounding different model selection techniques, we could potentially choose to remove this non-significant term from our model to give us a *minimal adequate model* to describe the patterns in these data (see the tutorial on model selection for more on this). Since `C1MMP` is not a variable which we have introduced into the model to allow us to control for an effect, and it is not a variable that is in the model because it represents some important element of experimental design (e.g. if the design were a blocked one we should include `block` as a factor) we can argue that removing it is justified. 
 
 Fit a second model called `M2` and assess the significance of the explanatory variables using `drop1()`
 
@@ -185,7 +185,7 @@ Have a think about the diagnostic plots and try to answer the questions.
     answer("It is not clear but there is some indication of negative skew", message = "Answer 2. There's nothing here to indicate negative skew, which would show as more very negative residuals and a convex curve of points on the qq-plot"),
     answer("The qq-plot shows that there is some positive skew in the residuals", correct = TRUE),
     answer(
-      "The qq-plot shows that the relationship between at least onf of the explanatory variables and the response variable is non-linear", message = "Answer 4. The qq-plot can only tell you about the distribution of the residuals, not about whether the shape of the relationship between response and epxlanatory variables is linear",
+      "The qq-plot shows that the relationship between at least one of the explanatory variables and the response variable is non-linear", message = "Answer 4. The qq-plot can only tell you about the distribution of the residuals, not about whether the shape of the relationship between response and epxlanatory variables is linear",
       answer("The presence of some residuals with high positive values which are not mirrored in the negative residuals indicates that there might be some positive skew in the residuals", correct = TRUE)
     )
 )
@@ -201,7 +201,7 @@ Rule 1 of dealing with real data is that your diagnostic plots are rarely going 
 hist(M2$residuals, breaks = 10)
 ```
 
-These are clearly somewhat positively skewed. Overall the amount of skew in the residuals is not especially severe, but we should probably try to do something about it. We could try a square root transformation of these data but to cut a long story short a square root trnasformation doesn't really rectify the problem so a log transformation is necessary. See if you can change this code to log transform the response variable so we can see what this does to the model with all three explanatory variables. There are no zeros in the `Hue` variable so there's no need to add a constant.
+These are clearly somewhat positively skewed. Overall the amount of skew in the residuals is not especially severe, but we should probably try to do something about it. We could try a square root transformation of these data but, to cut a long story short, a square root transformation doesn't really rectify the problem so a log transformation is necessary. See if you can change this code to log transform the response variable so we can see what this does to the model with all three explanatory variables. There are no zeros in the `Hue` variable so there's no need to add a constant.
 
 ```{r log_model1, exercise = TRUE}
 L1 <- lm(Hue ~ C1RCR + C1MMP + PGC_1a, data = finch)
@@ -231,6 +231,7 @@ OK, since we removed the less well supported term from the model `PGC_1a` is sta
 ```{r}
 plot(L2, which = 1:2)
 ```
+
 Things are better. The residuals versus fitted values plot no longer has any indication of skew, but there is a hint of a curve from the non-parametric smoother that R kindly draws across it in red. Is that indicative of a serious issue? Probably not in this case since the appearance of a curve is really being caused by a few negative residuals at the highest and lowest fitted values. If you were concerned about this you could try fitting a model with a quadratic term for one of the explanatory variables but we'll leave it there. The qq-plot shows that the log transform has fixed the issues with the most positive residuals although there is still some deviation from the line from the most negative residuals.
 
 </details>
@@ -271,7 +272,7 @@ $$log (Hue) = 3.03 - 0.262 \times C1RCR + 7.10 \times PGC\_1a.$$
 
 Whereas simple linear regression gives us a predicted straight line, in this case the equation describes a flat surface, and more complicated models with more than two explanatory variables describe more complex surfaces. These are not easy to visualise: as a general rule even "3D" graphs are poor ways to display data and plotting graphs in higher dimensions tends to be problematic. One option you'll often see is to plot the response variable against each explanatory variable separately and then to show a fitted line from a simple linear regression as an illustration of the way the two are related. We'll do this for our example: I've given you the code for the first plot, see if you can generate the code for the second.
 
-```{r plot_variables1, exercise = TRUE, exercise.lines = 30, fig.width = 6, fig.height = 4}
+```{r plot_variables1, exercise = TRUE, exercise.lines = 35, fig.width = 6, fig.height = 4}
 
 # Two plots side by side
 par(mfrow = c(1,2))
@@ -370,9 +371,11 @@ $$log (Hue) = 3.03 - 0.262 \times C1RCR + 7.10 \times PGC\_1a.$$
 
 So we can generate a new variable which is
 
-$$log(Hue) - (3.03 - 0.262 \times C1RCR)$$
+$$log(Hue) - (3.03 - 0.262 \times C1RCR).$$
 
-and plot the effect of PGC 1a against that. Here's a code framework: see if you can fill in the missing parts to generate a new plot showing the effect of PGC 1a. To draw in the effect of PGC 1a you need a line with an intercept of zero and a slope equal to the coefficient for PGC 1a in the model.
+To understand what this new variable represents, recall that when a linear model is fitted with more than one explaantory variable, the sums of square are calculated sequentially. So for a two variable model, the variance is firstly divided into the treatment variance for the first variable in the model formula (the variance in the data explained by that variable) and the remaining variance which that first variable can't explain. This can be thought of as being equivalent to what the the residuals would be from fitting that first variable. The second variable is then fitted to to these data, so you can think of this as fitting the second variable to the response variable once it's been adjusted to remove the effect of the first variable --- statisticians would say that the effects of the first variable have been *partialled out* from the response variable. This allows us to partition the remaining variance into the treatment variance for the second variable and the error variance. What we're calculating here is essentially those adjusted values for `log(Hue)` with the effects of `C1RCR` partialled out.  
+
+Now that we have these adjusted data we can plot the effect of PGC 1a against that, which will give a better visualisation of the effect of this variable as predicted by our model. Here's a code framework: see if you can fill in the missing parts to generate a new plot showing the effect of PGC 1a. To draw in the effect of PGC 1a you need a line with an intercept of zero and a slope equal to the coefficient for PGC 1a in the model.
 
 ```{r plot_variables2, exercise = TRUE, exercise.lines = 15}
 
@@ -560,7 +563,7 @@ hist(log(cricket$Song_week1+1),
      breaks = 10)
 ```
 
-This distirbution is still pretty weird, with a small amount of negative skew in the non-zero values and a good number of zeros as well. You could argue that this is evidence that there are really two classes of cricket: 'singers' and 'non-singers' and that it's not apporpriate to class them all together, but that's something for a different analysis. 
+This distribution is still pretty weird, with a small amount of negative skew in the non-zero values and a good number of zeros as well. You could argue that this is evidence that there are really two classes of cricket: 'singers' and 'non-singers' and that it's not appropriate to class them all together, but that's something for a different analysis. 
 
 Is this OK as a distribution for an explanatory variable? Yes, probably. It would be nicer to have a more even distribution, but the linear model doesn't make any assumptions about the distribution of the explanatory variables and we've no longer got those few datapoints with very large values so we're probably OK using these data.
 
@@ -575,10 +578,10 @@ Is this OK as a distribution for an explanatory variable? Yes, probably. It woul
 ## Fitting a model
 
 In the previous example we fitted a model with only the main effects of our explanatory variables. In this case we would like to know whether the relationship between weight gain and diet depends on the amount of time the cricket spent singing --- in other words, does the change in weight from having a good or a poor diet depend on the amount of energy the cricket invested into signalling? To test this we need to fit a model with an interaction between `Diet` and `Song_week1` as well as the main effects. Try to do this, and then check the significance of the interaction using `drop1()`. Call your model `C1`.
-
+<br>
 Don't forget you need to add 1 to the Song_week1 variable and log transform it.
 
-
+<br>
 ```{r cricket_model1, exercise = TRUE, paged.print=FALSE}
 
 
@@ -589,9 +592,7 @@ Don't forget you need to add 1 to the Song_week1 variable and log transform it.
 # can either use the format
 # 
 # variable1 + variable2 + variable1:variable2
-# 
 # or
-# 
 # variable1 * variable2
 # 
 # The second one in this case is
@@ -622,7 +623,7 @@ C1 <- lm(Delta_smi ~ Diet * log(Song_week1 +1),
 drop1(C1, test = "F")
 ```
 
-Hopefully you've got a highly significant interaction term. If youy haven't then check whether you log transformed the `Song_week1` variable. Recall that `drop1()` only carries out a test on the model variables where it makes sense to do so, and since both our variables are included in the interaction term it is not meaningful to do a statistical test on the main effects.
+Hopefully you've got a highly significant interaction term. If you haven't then check whether you log transformed the `Song_week1` variable. Recall that `drop1()` only carries out a test on the model variables where it makes sense to do so, and since both our variables are included in the interaction term it is not meaningful to do a statistical test on the main effects.
 
 The next thing we need to do is to check the diagnostic plots. As usual we're really mostly interested in the first two so use the `which = 1:2` argument.
 
@@ -660,7 +661,7 @@ question("Which of the following statements about the residuals versus fitted va
        answer("There is a slight tendency for the residuals for intermediate fitted values to have more positive values than those for low or high fitted values, indicate that the relationship between the epxlanatory variables and the response variable might be curved to some degree", correct = TRUE)
 ),
 
-question("Which of the following statements qq-plot of residuals is correct?",
+question("Which of the following statements about the qq-plot of residuals is correct?",
          answer("The residuals apppear to follow a normal distribution very closely"),
          answer("The pattern of residuals on the qq-plot indicates some degree of positive skew", message = "Answer 2. Positive skew is indicated by both the larger positive and negative values plotting above the line of unity"),
          answer("There are some data points with anomalously large residuals and these outliers should be removed before further analysis", message = "No, there's nothing here to indicate that any of these data are anomalous"),
@@ -677,9 +678,6 @@ The second diagnostic plot, the qq-plot, shows us that the residuals are mostly 
 
 Our major concern about our fitted model, then, is that there might be some curvature in the relationship between our explanatory variables and the response variable. What to do?
 
-VIDEO ON CURVES IN LINEAR MODELS
-
-
 Since we already noticed a hint of this earlier in the scatterplot of change in weight versus diet we will see if this can be addressed by adding a *quadratic* term for diet: we will add an extra explanatory variable which is simply diet^2^.
 
 To do this we need to use the `I()` function within our model formula to tell R to treat what's contained in the brackets as standard R code rather than part of a formula. This is because the `^2` notation means something different when it's part of a model formula than when it's used in standard R.
@@ -693,7 +691,7 @@ C2 <- lm(Delta_smi ~ Diet + I(Diet^2) + log(Song_week1 +1) + Diet:log(Song_week1
 drop1(C2, test = "F")
 ```
 
-You can see that the quadratic term is highly significant on the deletion test, indicating that a model without it has significantly less expalantory power. Has this fixed the curvature in the diagnostic plot?
+You can see that the quadratic term is highly significant on the deletion test, indicating that a model without it has significantly less explanatory power. Has this fixed the curvature in the diagnostic plot?
 
 ```{r}
 plot(C2, which = 1:2)
@@ -899,3 +897,5 @@ p2 <- ggplot(data = data.frame(cricket, song_quartiles, predicted, resids),
 
 p2
 ```
+<br><br><hr>
+<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons Licence" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.

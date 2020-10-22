@@ -2,7 +2,7 @@
 title: "Linear models 1: Single-factor ANOVA"
 output: 
   learnr::tutorial:
-    theme: lumen
+    theme: default
     css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
 runtime: shiny_prerendered
 author: Rob Knell
@@ -71,6 +71,11 @@ Looking at these boxplots, we can be happy that the data are probably reasonably
 
 When we come to think about the differences between groups, however, it's hard to say much with certainty: the 1000µm treatment has the lowest median and the 5µm treatment the highest, but there's a lot of overlap between them when we look at the interquartile ranges, and overall it's hard to say anything with much confidence about effects of the different filter sizes on root mass. A statistical test of the differences between the means would be helpful. We could use a t-test to compare each mean with each other mean, but that would give us a total of 6 tests and, because of the large number of tests, an overall type 1 error rate of 0.26, or 26%. This would mean that we would be quite likely to find at least one significant effect that was in fact simply a consequence of sampling error. What we are going to do instead is use an analysis called ANalysis Of VAriance, or ANOVA. Rather than comparing means, this relies on something called *partitioning variance* to detect whether there are differences between means. 
 
+<br><br><hr>
+1 Wang, M., Ruan, W., Kostenko, O., Carvalho, S., Hannula, S.E., Mulder, P.P.J., Bu, F., van der Putten, W.H. & Bezemer, T.M. (2019) Removal of soil biota alters soil feedback effects on plant growth and defense chemistry. The New phytologist, 221, 1478–1491.
+
+
+
 ## Partitioning variance
 
 This video explains what is meant by partitioning variance:
@@ -80,8 +85,11 @@ This video explains what is meant by partitioning variance:
 ## Generating an ANOVA table
 
 Just partitioning variance doesn't answer any questions about these data --- we want to know if there is a significant difference between our means. To do this we need to take our partitioned data and use it to carry out an ANalysis Of VAriance.
-
+<br>
 ![](https://youtu.be/9xyve87BJjk)
+<br>
+
+### ANOVA tables in R
 
 In the video you saw how to calculate the total, error and treatment sums of squares from first principles and how to put those together in an ANOVA table. In R there are two functions that will do this for you, one is `aov()` and the other is `lm()`. `lm()` stands for linear model and refers to the fact that the analysis we're looking at here is in fact one component of the larger family of analyses which are collectively referred to as linear models. `aov()` is very similar to `lm()` but gives its output in a slightly different way. We'll just use `lm()` here because we'll be going on to use it much more with a variety of different analyses.
 
@@ -95,12 +103,13 @@ R1 <- lm(root_mass ~ inoculum, data = ragwort)
 print(anova(R1))
 ```
 
-This gives us a standard ANOVA table. There isn't a row for the total sum of squares but this is not informative anyway, and the error sum of squares is titled `Residuals` but the rest is the standard layout. The mean square values are the sums of squares divided by the appropriate df., the F-statistic is the treatment mean squares (0.0283) divided by the error mean squares (0.00444) and the p-value is the probability of observing an F-value of 6.38 or greater on an F-distribution with 3 and 41 degrees of freedom. Our p-value is a  small number and well below 0.05 so we conclude that on the basis of this ANOVA we have at least one mean which is significantly different from at least one other mean.
-
-1 Wang, M., Ruan, W., Kostenko, O., Carvalho, S., Hannula, S.E., Mulder, P.P.J., Bu, F., van der Putten, W.H. & Bezemer, T.M. (2019) Removal of soil biota alters soil feedback effects on plant growth and defense chemistry. The New phytologist, 221, 1478–1491.
+This gives us a standard ANOVA table. There isn't a row for the total sum of squares but this is not informative anyway, and the error sum of squares is titled `Residuals`, but the rest is the standard layout. The mean square values are the sums of squares divided by the appropriate df., the F-statistic is the treatment mean squares (0.0283) divided by the error mean squares (0.00444) and the p-value is the probability of observing an F-value of 6.38 or greater on an F-distribution with 3 and 41 degrees of freedom. Our p-value is a  small number and well below 0.05 so we conclude that on the basis of this ANOVA we have at least one mean which is significantly different from at least one other mean.
 
 
-## Exercise: analysing the leaf mass data with an ANOVA
+
+
+## Exercise: Exploratory analysis of the leaf mass data with
+
 
 As we saw earlier there is a third variable in the `ragwort` data frame, namely `leaf_mass`. This gives the leaf mass (surprise!) in grams for the same plants that we have fitted an ANOVA to the root masses of. Before any analysis it's important to plot out the data and check for any anomalies, look for evidence of weird or problematic distributions and so on. As we did with the root mass data, this can be done in this case by plotting a boxplot of `leaf_mass` against `inoculum`. Have a go at doing this and remember to label your axes.
 
@@ -195,6 +204,8 @@ Another reason to look at this boxplot is to get an idea of the shape of the dat
 Boxlots also allow us to check whether there are any data values which are clearly anomalous and which we might need to consider removing before analysis. The 'outliers' indicated here are not different enough from the rest of the values to cause any worries and there's no reason to take a second look at them or consider removing them before analysis. If we had an outlier which had a value that was very unlikely (e.g. a single value of 5.5g when all the rest are less than 0.7g) or impossible (e.g. a negative value) then things would be different.
 </details>
 
+## Exercise: Fitting the ANOVA to the leaf mass data
+
 Now fit an ANOVA to your data, save the fitted object as `L1` and generate the ANOVA table. The code we used before for the root mass ANOVA has been pasted in and you just have to change it
 
 ```{r ANOVA, exercise = TRUE, exercise.cap = "ANOVA", exercise.lines = 6}
@@ -261,11 +272,13 @@ The F-statistic is the test statistic for our ANOVA and is calculated by dividin
 Because in ANOVA we are not comparing means directly, but are partitioning the variance into that epxlained by our treatment (MS inoculum) and that which we can't explain (MS error or MS residuals), our significant result tells us nothing about which means are different from which other means. All we can tell is that at least one mean is significantly different from at least one other mean. The next section tells us how to get more detail on where the differences really lie.
 </details>
 
-## Interpreting the ANOVA
+## Interpreting ANOVA output
 
 ### Post-hoc testing
 
-The statistically significant ANOVA tells us that at least one mean value in our root mass data is significantly different from at least one other mean value, but it doesn't tell us any more: we can't say, for example, whether the mean value for the 1000µm treatment is significantly different from the mean value for the 0.2µm treatment. To gain some further insight we have two options. Firstly, we can use a *post-hoc test*. These are statistical tests which are designed to compensate for the enhanced probability of a type 1 error that arises when doing multiple tests. Because of this compensation they tend to be *conservative* --- they have a higher *type 2 error rate* than we would like. In other words post-hoc tests have a higher probability of failing to detect an effect when they should do so than we would normally reagrd as acceptable, so they are usually only used once statistical significance has been established via an ANOVA or similar. The most common post-hoc test that you'll see used is the Tukey HSD test. This will calculate the difference between means for all six possible pairwise comparisons and give us 95% confidence intervals and a p-value for each of these differences. Post-hoc tests l The `TukeyHSD()` function doesn't work on ANOVA objects fitted with `lm()` but it does on ones fitted with `aov()` so our function call is a little more obscure than we might like.
+The statistically significant ANOVA tells us that at least one mean value in our root mass data is significantly different from at least one other mean value, but it doesn't tell us any more: we can't say, for example, whether the mean value for the 1000µm treatment is significantly different from the mean value for the 0.2µm treatment. 
+
+To gain some further insight we have two options. Firstly, we can use a *post-hoc test*. These are statistical tests which are designed to compensate for the enhanced probability of a *type 1 error* (a false positive) that arises when doing multiple tests. Because of this compensation they tend to be *conservative* --- they have a higher *type 2 error rate* than we would like (a type 2 error is when we fail to detect an effect when one is really there: a false negative) . In other words, post-hoc tests have a higher probability of failing to detect an effect when they should do so than we would normally reagrd as acceptable, so they are usually only used once statistical significance has been established via an ANOVA or similar. The most common post-hoc test that you'll see used is the Tukey HSD test. This will calculate the difference between means for all six possible pairwise comparisons and give us 95% confidence intervals and a p-value for each of these differences. The `TukeyHSD()` function doesn't work on ANOVA objects fitted with `lm()` but it does on ones fitted with `aov()` so our function call is a little more obscure than we might like.
 
 ```{r}
 TukeyHSD(aov(R1))
@@ -297,9 +310,9 @@ This is consistent with what the Tukey test is telling us: you can see that mean
 
 ### Using the estimated model coefficients
 
-A second option for interpreting a significant ANOVA is perhaps a little less satisfying if you want to have rigid rules about where the differences lie, but it also has some advantages over the post-hoc test we looked at above. This involves looking at the differences between means as estimated in the process of fitting the ANOVA --- the *model coefficients*. These, and some other information can be viewed by using the `summary()` function on our `R1` object. The output you get from R when you do this is not intuitively easy but is hopefully explained in the following video. The video deals with some more complex cases as well but for the moment ignore these: just watch the first 11 minutes.
+The second option for interpreting a significant ANOVA is perhaps a little less satisfying if you want to have rigid rules about where the differences lie, but it also has some advantages over the post-hoc test we looked at above. This involves looking at the differences between means as estimated in the process of fitting the ANOVA --- the *model coefficients*. These, and some other information can be viewed by using the `summary()` function on our `R1` object. The output you get from R when you do this is not intuitively easy but is hopefully explained in the following video. The video deals with some more complex cases as well but for the moment ignore these: just watch the first 11 minutes.
 
-![](https://youtu.be/3Y2vQIm3oVQ)
+![](https://youtu.be/CS5ogBL-MHo)
 
 
 ```{r}
@@ -573,3 +586,5 @@ quiz(
   )
 ```
 
+<br><br><hr>
+<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons Licence" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.

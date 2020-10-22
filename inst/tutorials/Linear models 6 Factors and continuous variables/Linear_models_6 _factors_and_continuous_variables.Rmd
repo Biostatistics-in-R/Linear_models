@@ -2,7 +2,7 @@
 title: "Linear models 6: Factors and continuous variables"
 output: 
   learnr::tutorial:
-    theme: lumen
+    theme: default
     css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
 runtime: shiny_prerendered
 author: Rob Knell
@@ -64,7 +64,7 @@ str(pinniped)
 
 We're interested here in the relationship between body mass and brain mass for males, and how it relates to the intensity of sexual selection each species experiences. The latter is indicated here by a variable called `Mate_type` which has two values. `mono` indicates species where the males are *monogynous*, pairing with a single female at a time, whereas `poly` indicates species with *polygynous* males which defend groups of females against rival males during the breeding season. Polygynous males are expected to experience stronger sexual selection during the breeding season.
 
-<br> ![](https://github.com/rjknell/Linear_models/raw/master/inst/tutorials/Linear models 5 Factors and continuous variables/Cape_fur_seals.jpg){width="500"}
+<br> ![](https://github.com/rjknell/Linear_models/raw/master/inst/tutorials/Linear%20models%206%20Factors%20and%20continuous%20variables/Cape_fur_seals.jpg){width="500"}
 
 Two male pinnipeds (Cape Fur Seals *Arctocephalus pusillus*, actually a species of sealion) competing for territory in which to defend a group of females. Photo copyright Rob Knell 2019.
 
@@ -852,3 +852,5 @@ p1
 
 Here you can see the very large effect that 1ILP has, wth all of the points well below the remainder. Looking at the lines for 2ILP and 3ILP you can see that they do have different slopes when compared to GFP but the elevation is roughly the same and so if these insulin-like proteins are having an effect it is quite subtle. The 4ILP and 5ILP lines are very close to the GFP line as we would expect from our model output.
 
+<br><br><hr>
+<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons Licence" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.

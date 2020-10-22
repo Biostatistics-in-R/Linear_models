@@ -2,7 +2,7 @@
 title: "Linear models 3: Assumptions and Diagnostics"
 output: 
   learnr::tutorial:
-    theme: lumen
+    theme: default
     css: http://research.sbcs.qmul.ac.uk/r.knell/learnr_data/test2.css
 runtime: shiny_prerendered
 author: Rob Knell
@@ -414,3 +414,7 @@ U2_fitted <- function (x) (0.6997 + 0.0912 * x)^2
 # otherwise it will generate a new graph.
 curve(U2_fitted, add = TRUE)
 ```
+
+
+<br><br><hr>
+<a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons Licence" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/">Creative Commons Attribution-NonCommercial 4.0 International License</a>.
